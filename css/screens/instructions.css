@@ -1,0 +1,32 @@
+/* Instructions screen */
+
+.instructions {
+  max-width: 760px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 48px 32px 64px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.instructions-guide { display: flex; align-items: flex-end; gap: 24px; }
+.instructions-bee { height: 170px; width: auto; display: block; }
+.instructions-bubble { flex: 1; margin-bottom: 16px; }
+.instructions-bubble p { margin: 0; }
+.instructions-eyebrow { letter-spacing: .1em; margin-bottom: 8px; }
+
+.instructions-rules {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  font-size: 16px;
+  line-height: 1.55;
+}
+.instructions-rules ul { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 8px; }
+
+.instructions-actions { display: flex; gap: 12px; }

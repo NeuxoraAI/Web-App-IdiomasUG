@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Examen de Idiomas UG · EXAUBI</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Raleway:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/tokens.css">
+<link rel="stylesheet" href="css/base.css">
+<link rel="stylesheet" href="css/screens/login.css">
+<link rel="stylesheet" href="css/screens/profile.css">
+<link rel="stylesheet" href="css/screens/instructions.css">
+<link rel="stylesheet" href="css/screens/exam.css">
+<link rel="stylesheet" href="css/screens/results.css">
+<link rel="stylesheet" href="css/screens/certificate.css">
+</head>
+<body>
+
+<!-- ============ LOGIN ============ -->
+<section id="screen-login" class="login" hidden>
+  <div class="login-hero">
+    <div class="login-hero-slot"></div>
+    <div class="login-hero-gradient"></div>
+    <div class="login-hero-dots"></div>
+    <div class="login-hero-content">
+      <div class="login-brand">
+        <div class="login-brand-shield">
+          <img src="https://ugto.mx/campusleon/lenguas/images/escudo-universidad-de-guanajuato.png" alt="Escudo Universidad de Guanajuato">
+        </div>
+        <div class="login-brand-names">
+          <div class="login-brand-university">Universidad de Guanajuato</div>
+          <div class="login-brand-campus">Campus León</div>
+        </div>
+      </div>
+      <div class="login-headline">
+        <h1 class="login-title" id="login-center"></h1>
+        <div class="login-tagline" id="login-tagline"></div>
+        <div class="login-chips" id="login-chips"></div>
+      </div>
+      <div class="login-footer">
+        <div class="login-bee-row">
+          <img src="./assets/abeja-ok.png" alt="Abeja UG" class="login-bee">
+          <div class="login-bee-text">
+            <span class="login-welcome" id="login-welcome"></span>
+            <span class="login-invite">Tu examen de ubicación EXAUBI te espera. Ingresa tu código para comenzar.</span>
+          </div>
+        </div>
+        <div class="login-ribbon">
+          <span class="login-ribbon-hashtag">#SomosAbejasUG</span>
+          <span class="login-ribbon-url">www.ugto.mx/campusleon/lenguas</span>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="login-panel">
+    <div class="login-form-wrap">
+      <form id="login-form" class="login-form">
+        <div class="login-form-head">
+          <div class="eyebrow">EXAUBI 2026B · Inglés</div>
+          <h2 class="login-form-title" id="login-title"></h2>
+          <p class="login-form-hint">Ingresa el código de un solo uso que recibiste en tu correo institucional.</p>
+        </div>
+        <label class="login-code-label">Código de acceso
+          <input type="text" id="login-code" class="login-code-input" placeholder="XXXX-XXXX" maxlength="9" autocomplete="one-time-code">
+        </label>
+        <button type="submit" class="btn-primary login-submit" id="login-button"></button>
+        <p class="login-form-note">El código es válido para un solo intento y expira al concluir el examen.</p>
+      </form>
+    </div>
+    <div class="login-institutional">
+      <div class="login-logos">
+        <img src="https://ugto.mx/campusleon/lenguas/images/escudo-universidad-de-guanajuato.png" alt="Universidad de Guanajuato" class="login-logo-ug">
+        <div class="login-logo-divider"></div>
+        <img src="./assets/ecosistema-vida-ug.png" alt="Ecosistema Vida UG · Campus León" class="login-logo-vida">
+      </div>
+      <div class="login-powered">Powered by <strong>Neuxora</strong></div>
+      <p class="login-address">Área de Servicios de Educación para la Vida · CE-VIDA UG-CL · Rectoría Campus León<br>Aquiles Serdán #924, Col. Obregón, León, Gto. · Tel. 477 267 49 00 ext. 4751</p>
+    </div>
+  </div>
+
+  <button id="help-toggle" class="help-toggle" aria-label="Ayuda">
+    <img src="./assets/bee-bot.png" alt="Bee bot">
+  </button>
+  <div id="help-panel" class="help-panel" hidden>
+    <div class="help-header">
+      <img src="./assets/bee-bot.png" alt="" class="help-header-avatar">
+      <div class="help-header-names">
+        <span class="help-header-name">Bee bot</span>
+        <span class="help-header-role">Asistente de ayuda</span>
+      </div>
+    </div>
+    <div id="chat-messages" class="chat-messages" data-chat-scroll="true"></div>
+    <div class="chat-footer">
+      <div id="chat-quick" class="chat-quick"></div>
+      <form id="chat-form" class="chat-form">
+        <input type="text" id="chat-input" class="chat-input" placeholder="Escribe tu pregunta…">
+        <button type="submit" class="chat-send" aria-label="Enviar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"></path></svg></button>
+      </form>
+      <div class="chat-contact">Tel. 477 267 49 00 ext. 4751 · Lun a vie, 9:00–18:00 · Powered by Neuxora</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ APP SHELL (header + inner screens) ============ -->
+<div id="app-shell" class="app-shell" hidden>
+  <header class="app-header">
+    <div class="app-header-brand">
+      <div class="app-header-shield"><img src="https://ugto.mx/campusleon/lenguas/images/escudo-universidad-de-guanajuato.png" alt=""></div>
+      <div class="app-header-names">
+        <div class="app-header-university">Universidad de Guanajuato</div>
+        <div class="app-header-center">Centro de Servicios de Lenguas Extranjeras · EXAUBI</div>
+      </div>
+    </div>
+    <div id="header-timer" class="header-timer" hidden>
+      <span class="header-timer-label">Tiempo restante</span>
+      <div id="timer-text" class="timer-badge"></div>
+    </div>
+    <nav id="header-nav" class="app-nav" hidden>
+      <button id="nav-profile" class="app-nav-link">Perfil</button>
+      <button id="nav-test" class="app-nav-link">Examen</button>
+      <div class="app-nav-user">
+        <div class="app-nav-avatar">ML</div>
+        <button id="nav-logout" class="app-nav-logout">Cerrar sesión</button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ============ PROFILE ============ -->
+  <main id="screen-profile" class="profile" hidden>
+    <h1 class="profile-title">Mi perfil</h1>
+    <div class="profile-grid">
+      <section class="card profile-card">
+        <div class="profile-identity">
+          <div class="profile-avatar">ML</div>
+          <div class="profile-names">
+            <div class="profile-name">Mariana López Ruiz</div>
+            <div class="profile-role">Sustentante · EXAUBI 2026B</div>
+          </div>
+        </div>
+        <div class="profile-divider"></div>
+        <dl class="profile-facts">
+          <dt>Folio</dt><dd class="profile-folio" id="profile-folio"></dd>
+          <dt>Campus</dt><dd>León</dd>
+          <dt>Idioma</dt><dd>Inglés</dd>
+          <dt>Correo</dt><dd>m.lopezruiz@ugto.mx</dd>
+        </dl>
+      </section>
+      <div class="profile-main">
+        <section class="card card--accent profile-exam-card">
+          <div class="profile-exam-head">
+            <div class="profile-exam-titles">
+              <div class="eyebrow">Examen asignado</div>
+              <h2 class="profile-exam-title">EXAUBI · Inglés</h2>
+            </div>
+            <span class="profile-exam-status">Disponible</span>
+          </div>
+          <div class="profile-stats">
+            <div class="profile-stat"><span class="profile-stat-label">Duración</span><span class="profile-stat-value"><span id="profile-duration"></span> min</span></div>
+            <div class="profile-stat"><span class="profile-stat-label">Preguntas</span><span class="profile-stat-value" id="profile-questions"></span></div>
+            <div class="profile-stat"><span class="profile-stat-label">Intento</span><span class="profile-stat-value">Único</span></div>
+            <div class="profile-stat"><span class="profile-stat-label">Fecha límite</span><span class="profile-stat-value">30 sep</span></div>
+          </div>
+          <div class="profile-bee-row">
+            <img src="./assets/bee-bot.png" alt="Bee bot" class="profile-bee">
+            <div class="speech-bubble speech-bubble--cream profile-bubble">
+              <span id="profile-typed"></span>
+            </div>
+          </div>
+          <button id="profile-start" class="btn-primary profile-start">Iniciar examen</button>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- ============ INSTRUCTIONS ============ -->
+  <main id="screen-instructions" class="instructions" hidden>
+    <div class="instructions-guide">
+      <img src="./assets/abeja-lentes.png" alt="Abeja UG" class="instructions-bee">
+      <div class="speech-bubble instructions-bubble">
+        <div class="eyebrow instructions-eyebrow">Antes de comenzar</div>
+        <p>Hola, soy tu guía. El examen tiene <strong><span id="instructions-totalq"></span> preguntas</strong> de distinto tipo: opción múltiple, verdadero/falso, comprensión auditiva, palabras faltantes, completar arrastrando, traducir con fichas, relacionar, respuesta corta, imagen y un texto breve. Tienes <strong><span id="instructions-minutes"></span> minutos</strong>.</p>
+      </div>
+    </div>
+    <section class="instructions-rules">
+      <ul>
+        <li>Responde y pulsa <strong>Siguiente</strong>. Puedes omitir una pregunta si lo necesitas; no es posible regresar.</li>
+        <li>Al agotarse el tiempo, el examen se envía automáticamente.</li>
+        <li>No uses diccionarios ni traductores. Usa audífonos para la parte auditiva.</li>
+        <li><strong>No está permitido el uso de inteligencia artificial.</strong> El texto del examen está protegido: si lo copias a un asistente de IA, este no podrá responder.</li>
+      </ul>
+    </section>
+    <div class="instructions-actions">
+      <button id="instructions-start" class="btn-primary">Comenzar examen</button>
+      <button id="instructions-back" class="btn-outline">Volver</button>
+    </div>
+  </main>
+
+  <!-- ============ EXAM ============ -->
+  <main id="screen-exam" class="exam" hidden>
+    <div id="copy-flash" class="copy-flash" hidden>
+      <img src="./assets/bee-bot.png" alt="" class="copy-flash-avatar">
+      <span>Texto protegido: el contenido copiado incluye un aviso para asistentes de IA. El examen no permite ayuda externa.</span>
+    </div>
+    <div class="exam-inner">
+      <div class="exam-meta">
+        <div class="exam-meta-left">
+          <span class="eyebrow" id="exam-section-name"></span>
+          <span class="exam-meta-divider"></span>
+          <span class="exam-meta-count">Pregunta <span id="exam-qnum"></span> de <span id="exam-totalq"></span></span>
+        </div>
+        <button id="exam-exit" class="btn-link">Salir del examen</button>
+      </div>
+      <div class="exam-progress"><div id="exam-progress-fill" class="exam-progress-fill"></div></div>
+      <section id="question-card" class="exam-card"></section>
+    </div>
+  </main>
+
+  <!-- ============ RESULTS ============ -->
+  <main id="screen-results" class="results" hidden>
+    <section class="results-hero">
+      <img src="./assets/abeja-ok.png" alt="Abeja UG" class="results-bee">
+      <div class="results-hero-body">
+        <div class="results-badge"><span class="results-mcer" id="results-mcer"></span></div>
+        <div class="results-hero-text">
+          <div class="results-hero-tags">
+            <span class="results-completed">¡Examen completado!</span>
+            <span class="results-beta">Nivel Beta Test</span>
+          </div>
+          <h1 class="results-level" id="results-level"></h1>
+          <p class="results-summary" id="results-summary"></p>
+        </div>
+      </div>
+    </section>
+    <section class="card results-breakdown">
+      <h2 class="results-breakdown-title">Desempeño por parte</h2>
+      <div id="results-sections"></div>
+      <p class="results-note">El texto breve se revisa manualmente y no cuenta para este puntaje preliminar.</p>
+    </section>
+    <section class="results-farewell">
+      <img src="./assets/abeja-lentes.png" alt="Abeja UG" class="results-farewell-bee">
+      <div class="speech-bubble speech-bubble--cream results-farewell-bubble">
+        <p class="results-farewell-title">¡Gracias por participar, abeja!</p>
+        <p>Tu resultado quedó registrado y lo recibirás en tu correo institucional. Este examen permite un solo intento, así que tu sesión se cerrará en <strong><span id="results-closein"></span> s</strong>.</p>
+      </div>
+    </section>
+    <div class="results-actions">
+      <button id="results-cert" class="btn-gold">Descargar certificado de nivel</button>
+      <button id="results-logout" class="btn-primary">Cerrar sesión ahora</button>
+    </div>
+  </main>
+</div>
+
+<!-- ============ CERTIFICATE OVERLAY ============ -->
+<div id="certificate-overlay" class="cert-overlay" hidden>
+  <div class="cert-spacer"></div>
+  <div class="cert-toolbar" data-hide-print="true">
+    <button id="cert-print" class="btn-gold btn-gold--small">Guardar como PDF</button>
+    <button id="cert-close" class="cert-close">Cerrar</button>
+  </div>
+  <div class="cert-sheet" data-certificate="true">
+    <div class="cert-frame-outer">
+      <div class="cert-frame-inner">
+        <div class="cert-gold-strip"></div>
+        <div class="cert-head">
+          <img src="https://ugto.mx/campusleon/lenguas/images/escudo-universidad-de-guanajuato.png" alt="Universidad de Guanajuato" class="cert-shield">
+          <div class="cert-university">Universidad de Guanajuato</div>
+          <div class="cert-campus">Campus León · Centro de Servicios de Lenguas Extranjeras</div>
+        </div>
+        <div class="cert-body">
+          <div class="cert-title">Constancia de nivel</div>
+          <div class="cert-exam-badge">Examen de ubicación EXAUBI · Nivel Beta Test</div>
+          <p class="cert-grant">Se otorga la presente a</p>
+          <div class="cert-name">Mariana López Ruiz</div>
+          <p class="cert-reason">por haber presentado el examen de ubicación de inglés y alcanzado el nivel</p>
+          <div class="cert-level-row">
+            <span class="cert-mcer" id="cert-mcer"></span>
+            <span class="cert-level-name" id="cert-level"></span>
+          </div>
+        </div>
+        <div class="cert-foot">
+          <div class="cert-facts">
+            <div class="cert-fact"><span class="cert-fact-label">Folio</span><span class="cert-fact-value" id="cert-folio"></span></div>
+            <div class="cert-fact"><span class="cert-fact-label">Idioma</span><span class="cert-fact-value">Inglés</span></div>
+            <div class="cert-fact"><span class="cert-fact-label">Puntaje</span><span class="cert-fact-value" id="cert-score"></span></div>
+            <div class="cert-fact"><span class="cert-fact-label">Fecha</span><span class="cert-fact-value" id="cert-date"></span></div>
+          </div>
+          <div class="cert-signatures">
+            <div class="cert-signature"><div class="cert-signature-line"></div><span>Dirección del Centro de Servicios<br>de Lenguas Extranjeras</span></div>
+            <div class="cert-motto">La verdad os hará libres</div>
+            <div class="cert-signature"><div class="cert-signature-line"></div><span>Rectoría<br>Campus León</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="cert-spacer"></div>
+</div>
+
+<script type="module" src="js/app.js"></script>
+</body>
+</html>
