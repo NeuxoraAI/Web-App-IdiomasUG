@@ -61,6 +61,13 @@
           <h2 class="login-form-title" id="login-title"></h2>
           <p class="login-form-hint">Ingresa el código de un solo uso que recibiste en tu correo institucional.</p>
         </div>
+        <label class="login-code-label">CURP
+          <input type="text" id="login-curp" class="login-code-input login-curp-input"
+                 placeholder="ABCD123456HGTXYZ01" maxlength="18"
+                 autocomplete="off" autocapitalize="characters" spellcheck="false"
+                 pattern="[A-Za-z][AEIOUXaeioux][A-Za-z]{2}\d{6}[HMhm][A-Za-z]{2}[B-DF-HJ-NP-TV-ZÑb-df-hj-np-tv-zñ]{3}[A-Za-z\d]\d"
+                 title="18 caracteres con el formato oficial de la CURP.">
+        </label>
         <label class="login-code-label">Código de acceso
           <input type="text" id="login-code" class="login-code-input" placeholder="XXXX-XXXX" maxlength="9" autocomplete="one-time-code">
         </label>

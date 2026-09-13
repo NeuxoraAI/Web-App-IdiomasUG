@@ -25,6 +25,7 @@ export function init(navigation) {
     nav.showProfile();
   });
   $('#login-code').addEventListener('input', (e) => { state.email = e.target.value; });
+  $('#login-curp').addEventListener('input', (e) => { state.curp = e.target.value.toUpperCase(); });
 
   $('#help-toggle').addEventListener('click', toggleHelp);
   $('#chat-form').addEventListener('submit', (e) => {

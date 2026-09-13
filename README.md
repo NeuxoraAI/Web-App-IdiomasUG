@@ -19,9 +19,6 @@ js/
   screens/            One module per screen (login, profile, instructions,
                       exam, results, certificate)
 assets/               Images used by the app
-docs/                 Reference documents (question source, brand guide)
-design-reference/     Original Claude Design canvas prototype and its exports
-                      (kept for visual reference; no longer the source of truth)
 ```
 
 ## Run

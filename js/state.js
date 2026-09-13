@@ -4,6 +4,7 @@
 export const state = {
   screen: 'login',
   email: '',
+  curp: '',
 
   // Exam
   q: 0,               // current question index
