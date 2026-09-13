@@ -216,3 +216,8 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Archivos de prueba XLSX y otros
+codigos_acceso.xlsx
+Proceso_Acceso_Solicitantes_Idiomas_UG.md
+.atl
