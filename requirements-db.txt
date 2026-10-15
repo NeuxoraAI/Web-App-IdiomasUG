@@ -1,0 +1,5 @@
+# Dependencias de la capa de base de datos (además de requirements.txt).
+# Instalar con:  pip install -r requirements.txt -r requirements-db.txt
+pymongo==4.18.2
+python-dotenv==1.2.3
+pytest==9.1.1

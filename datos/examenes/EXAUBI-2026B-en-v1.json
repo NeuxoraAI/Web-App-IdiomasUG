@@ -1,0 +1,238 @@
+{
+  "_id": "EXAUBI-2026B-en-v1",
+  "clave": "EXAUBI",
+  "convocatoria": "2026B",
+  "idioma": "en",
+  "version": 1,
+  "titulo": "EXAUBI · Inglés",
+  "estado": "borrador",
+  "duracion_min": 35,
+  "disponible_hasta": null,
+  "partes": [
+    {
+      "numero": 1,
+      "nombre": "Parte 1 · Básico"
+    },
+    {
+      "numero": 2,
+      "nombre": "Parte 2 · Intermedio"
+    },
+    {
+      "numero": 3,
+      "nombre": "Parte 3 · Avanzado"
+    }
+  ],
+  "niveles": [
+    {
+      "min_aciertos": 0,
+      "mcer": "A1",
+      "nombre": "Nivel 1 · Básico"
+    },
+    {
+      "min_aciertos": 3,
+      "mcer": "A2",
+      "nombre": "Nivel 1 · Básico alto"
+    },
+    {
+      "min_aciertos": 5,
+      "mcer": "B1",
+      "nombre": "Nivel 2 · Intermedio"
+    },
+    {
+      "min_aciertos": 7,
+      "mcer": "B2",
+      "nombre": "Nivel 3 · Intermedio alto"
+    },
+    {
+      "min_aciertos": 8,
+      "mcer": "C1",
+      "nombre": "Nivel 3 · Avanzado"
+    }
+  ],
+  "preguntas": [
+    {
+      "id": "q01",
+      "parte": 1,
+      "tipo": "choice",
+      "instruccion": "Selecciona la respuesta correcta",
+      "enunciado": "This car is more_____than that one.",
+      "opciones": [
+        "fast",
+        "cheap",
+        "slow",
+        "expensive"
+      ],
+      "respuesta": 3
+    },
+    {
+      "id": "q02",
+      "parte": 1,
+      "tipo": "tf",
+      "instruccion": "¿Es correcta esta oración?",
+      "enunciado": "“She don’t like coffee.”",
+      "opciones": [
+        "True",
+        "False"
+      ],
+      "respuesta": 1
+    },
+    {
+      "id": "q03",
+      "parte": 1,
+      "tipo": "listen",
+      "instruccion": "Escucha y elige lo que oíste",
+      "enunciado": "Toca el altavoz para escuchar.",
+      "opciones": [
+        "I go home at 3 o’clock.",
+        "I go home in 3 o’clock.",
+        "I go home on 3 o’clock."
+      ],
+      "media": {
+        "tipo": "audio",
+        "url": null
+      },
+      "respuesta": 0
+    },
+    {
+      "id": "q04",
+      "parte": 1,
+      "tipo": "select",
+      "instruccion": "Elige las palabras que faltan",
+      "enunciado": "Completa con la forma correcta del verbo “to be”.",
+      "segmentos": [
+        "I ",
+        {
+          "hueco": 0
+        },
+        " a student and my brothers ",
+        {
+          "hueco": 1
+        },
+        " teachers."
+      ],
+      "opciones_hueco": [
+        [
+          "am",
+          "is",
+          "are"
+        ],
+        [
+          "am",
+          "is",
+          "are"
+        ]
+      ],
+      "respuesta": [
+        "am",
+        "are"
+      ]
+    },
+    {
+      "id": "q05",
+      "parte": 2,
+      "tipo": "drag",
+      "instruccion": "Completa la oración",
+      "enunciado": "Arrastra las fichas a los espacios.",
+      "segmentos": [
+        "Yesterday we ",
+        {
+          "hueco": 0
+        },
+        " to the cinema and ",
+        {
+          "hueco": 1
+        },
+        " a very good film."
+      ],
+      "banco": [
+        "went",
+        "saw",
+        "go",
+        "see"
+      ],
+      "respuesta": [
+        "went",
+        "saw"
+      ]
+    },
+    {
+      "id": "q06",
+      "parte": 2,
+      "tipo": "order",
+      "instruccion": "Traduce esta oración",
+      "enunciado": "Nunca he estado en Londres.",
+      "banco": [
+        "never",
+        "been",
+        "I",
+        "have",
+        "to London",
+        "was",
+        "going"
+      ],
+      "respuesta": "I have never been to London"
+    },
+    {
+      "id": "q07",
+      "parte": 2,
+      "tipo": "match",
+      "instruccion": "Relaciona cada palabra con su significado",
+      "enunciado": "Toca una palabra y luego su definición.",
+      "izquierdas": [
+        "reliable",
+        "generous",
+        "punctual"
+      ],
+      "derechas": [
+        "arrives on time",
+        "can be trusted",
+        "gives more than expected"
+      ],
+      "respuesta": [
+        "can be trusted",
+        "gives more than expected",
+        "arrives on time"
+      ]
+    },
+    {
+      "id": "q08",
+      "parte": 3,
+      "tipo": "short",
+      "instruccion": "Escribe la palabra que falta",
+      "enunciado": "He’s been working here ______ 2019.",
+      "respuesta": [
+        "since"
+      ]
+    },
+    {
+      "id": "q09",
+      "parte": 3,
+      "tipo": "notice",
+      "instruccion": "¿Dónde puedes ver este aviso?",
+      "enunciado": "Where can you see this notice?",
+      "opciones": [
+        "in a restaurant",
+        "in a library",
+        "in a police station",
+        "in a book"
+      ],
+      "media": {
+        "tipo": "imagen",
+        "url": null
+      },
+      "respuesta": null
+    },
+    {
+      "id": "q10",
+      "parte": 3,
+      "tipo": "essay",
+      "instruccion": "Escribe un texto breve",
+      "enunciado": "Describe a place you would like to visit and explain why. Write 50–80 words.",
+      "palabras": {
+        "min": 50,
+        "max": 80
+      },
+      "respuesta": null
+    }
+  ]
+}
