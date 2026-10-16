@@ -12,6 +12,7 @@ Thumbs.db
 # Secrets / env
 .env
 .env.*
+!.env.example
 
 # Node (si algún día se agrega un bundler)
 node_modules/

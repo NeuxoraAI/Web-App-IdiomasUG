@@ -1,0 +1,11 @@
+[
+  { "_id": "fr", "nombre": "Francés",   "nombre_nativo": "Français",  "activo": true },
+  { "_id": "de", "nombre": "Alemán",    "nombre_nativo": "Deutsch",   "activo": true },
+  { "_id": "ja", "nombre": "Japonés",   "nombre_nativo": "日本語",     "activo": true },
+  { "_id": "es", "nombre": "Español",   "nombre_nativo": "Español",   "activo": true },
+  { "_id": "it", "nombre": "Italiano",  "nombre_nativo": "Italiano",  "activo": true },
+  { "_id": "ko", "nombre": "Coreano",   "nombre_nativo": "한국어",     "activo": true },
+  { "_id": "zh", "nombre": "Chino",     "nombre_nativo": "中文",       "activo": true },
+  { "_id": "en", "nombre": "Inglés",    "nombre_nativo": "English",   "activo": false },
+  { "_id": "pt", "nombre": "Portugués", "nombre_nativo": "Português", "activo": false }
+]
