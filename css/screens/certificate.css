@@ -1,0 +1,132 @@
+/* Certificate overlay + printable sheet */
+
+.cert-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 20;
+  background: rgba(0, 32, 58, .72);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 18px;
+  padding: 24px;
+  overflow: auto;
+}
+.cert-spacer { flex: 1 0 0; min-height: 0; }
+
+.cert-toolbar { display: flex; gap: 12px; width: 100%; max-width: 960px; justify-content: flex-end; }
+.cert-close {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 14px;
+  padding: 12px 20px;
+  background: #fff;
+  color: var(--navy);
+  border: 0;
+  border-radius: 8px;
+}
+.cert-close:hover { background: var(--selected-bg); }
+
+.cert-sheet {
+  width: 100%;
+  max-width: 960px;
+  aspect-ratio: 1.414;
+  background: #fff;
+  color: var(--text);
+  padding: 26px;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, .4);
+  flex: none;
+}
+.cert-frame-outer { height: 100%; border: 3px solid var(--navy); padding: 6px; }
+.cert-frame-inner {
+  height: 100%;
+  border: 1px solid var(--olive);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  text-align: center;
+  padding: 34px 56px 30px;
+  background-image: radial-gradient(rgba(154, 153, 110, .16) 1px, transparent 1.2px);
+  background-size: 18px 18px;
+}
+.cert-gold-strip { position: absolute; left: 0; right: 0; bottom: 0; height: 10px; background: var(--gold); }
+
+.cert-head { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.cert-shield { height: 84px; width: auto; display: block; }
+.cert-university { font-family: var(--font-wide); font-size: 13px; letter-spacing: .16em; text-transform: uppercase; color: var(--navy); }
+.cert-campus {
+  font-family: var(--font-display);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.cert-body { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+.cert-title {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 800;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--navy);
+  line-height: 1;
+}
+.cert-exam-badge {
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  padding: 5px 12px;
+  border-radius: var(--radius-pill);
+  background: var(--cream-badge);
+  color: var(--cream-badge-text);
+}
+.cert-grant { margin: 10px 0 0; font-size: 15px; color: var(--text-feedback); }
+.cert-name {
+  font-family: var(--font-display);
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text);
+  border-bottom: 2px solid var(--olive);
+  padding: 0 28px 6px;
+}
+.cert-reason { margin: 6px 0 0; font-size: 15px; color: var(--text-feedback); max-width: 560px; line-height: 1.5; }
+.cert-level-row { display: flex; align-items: center; gap: 14px; }
+.cert-mcer {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: var(--navy);
+  color: var(--gold);
+  font-family: var(--font-wide);
+  font-weight: 700;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cert-level-name { font-family: var(--font-display); font-size: 22px; font-weight: 800; color: var(--navy); }
+
+.cert-foot { width: 100%; display: flex; flex-direction: column; gap: 18px; }
+.cert-facts { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; font-size: 13px; text-align: left; }
+.cert-fact { display: flex; flex-direction: column; gap: 2px; }
+.cert-fact-label { font-size: 10px; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); }
+.cert-fact-value { font-family: var(--font-display); font-weight: 700; color: var(--navy); }
+
+.cert-signatures { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; padding-bottom: 10px; }
+.cert-signature { display: flex; flex-direction: column; align-items: center; gap: 6px; width: 240px; }
+.cert-signature-line { width: 100%; height: 1px; background: var(--text); }
+.cert-signature span { font-size: 11px; color: var(--text-feedback); line-height: 1.4; }
+.cert-motto {
+  font-family: var(--font-display);
+  font-size: 11px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: var(--olive);
+}

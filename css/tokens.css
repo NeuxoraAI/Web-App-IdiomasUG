@@ -1,0 +1,54 @@
+/* Design tokens — Universidad de Guanajuato institutional palette */
+:root {
+  /* Brand */
+  --navy: #003057;
+  --navy-dark: #00203A;      /* primary button drop shadow */
+  --navy-hover: #00243F;
+  --navy-deep: #00203A;
+  --gold: #FDD26E;
+  --gold-dark: #C9A346;      /* gold button drop shadow */
+  --gold-hover: #F5C64A;
+  --olive: #9A996E;
+
+  /* Surfaces */
+  --bg: #F4F5F7;
+  --surface: #fff;
+  --surface-alt: #F7F8FA;
+  --cream: #FFF8E1;
+  --cream-badge: #FFF3CC;
+  --cream-badge-text: #7A5A00;
+  --selected-bg: #EEF3F8;
+
+  /* Text */
+  --text: #1F2933;
+  --text-muted: #5A6470;
+  --text-faint: #8A939C;
+  --text-disabled: #9AA3AD;
+  --text-feedback: #4A4F55;
+
+  /* Borders */
+  --border: #E1E4E8;
+  --border-input: #CDD3DA;
+  --border-chat: #EEF1F4;
+
+  /* Semantic */
+  --green: #2E7D4F;
+  --green-dark: #1F5C38;
+  --green-bg: #F1F8F3;
+  --red: #B3261E;
+  --red-dark: #7F1A13;
+  --red-bg: #FDF3F2;
+
+  /* Typography */
+  --font-body: 'Source Sans 3', sans-serif;
+  --font-display: 'Raleway', sans-serif;
+  --font-wide: 'Syncopate', sans-serif;
+
+  /* Recurring shapes */
+  --radius-card: 10px;
+  --radius-input: 6px;
+  --radius-pill: 999px;
+  --shadow-card: 0 12px 40px rgba(0, 48, 87, .08);
+  --shadow-float: 0 12px 32px rgba(0, 48, 87, .18);
+  --focus-ring: 0 0 0 3px rgba(0, 48, 87, .15);
+}
