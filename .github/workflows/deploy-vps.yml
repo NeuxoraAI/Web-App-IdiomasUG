@@ -1,7 +1,9 @@
 name: Deploy to nextcl
 
-# Manual only: GitHub → Actions → "Deploy to nextcl" → Run workflow.
 on:
+  push:
+    branches: [develop]
+    paths: ["backend/**", "frontend/**", "docker-compose.yml", ".github/workflows/deploy-vps.yml"]
   workflow_dispatch:
 
 concurrency:
