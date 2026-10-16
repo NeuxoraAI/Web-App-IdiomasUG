@@ -1,5 +1,5 @@
 # Production-like stack on nextcl. MongoDB runs separately (~/inst/mongodb-idiomas).
-# Secrets come from .env (copied by the deploy workflow from ~/idiomas-ug/.env).
+# Secrets come from .env (copied by the deploy workflow from ~/inst/ug_idiomas_entorno/.env).
 name: idiomas-ug
 
 services:

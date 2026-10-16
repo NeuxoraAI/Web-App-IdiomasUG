@@ -17,7 +17,7 @@ jobs:
       - uses: actions/checkout@v5
 
       - name: Load server secrets
-        run: cp ~/idiomas-ug/.env .env
+        run: cp ~/inst/ug_idiomas_entorno/.env .env
 
       - name: Build images
         run: docker compose build
