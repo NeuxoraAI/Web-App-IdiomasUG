@@ -1,0 +1,38 @@
+name: Deploy to nextcl
+
+on:
+  push:
+    branches: [develop]
+    paths: ["backend/**", "frontend/**", "docker-compose.yml", ".github/workflows/deploy-vps.yml"]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-nextcl
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: self-hosted   # the only org runner: nextcl
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Load server secrets
+        run: cp ~/idiomas-ug/.env .env
+
+      - name: Build images
+        run: docker compose build
+
+      - name: Run tests (against idiomas_ug_test)
+        run: docker compose run --rm --no-deps api python -m pytest tests -q
+
+      - name: Deploy
+        run: docker compose up -d --remove-orphans
+
+      - name: Health check
+        run: |
+          for i in $(seq 1 20); do
+            curl -sf http://localhost/api/salud && exit 0
+            sleep 3
+          done
+          docker compose logs --tail 50 api
+          exit 1

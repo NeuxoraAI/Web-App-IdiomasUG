@@ -24,7 +24,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
-      - run: rsync -a --exclude Dockerfile --exclude nginx.conf frontend/ _site/
+      - run: rsync -a --exclude Dockerfile --exclude Caddyfile frontend/ _site/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

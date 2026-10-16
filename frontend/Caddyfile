@@ -1,0 +1,12 @@
+# HTTP only for internal testing. For HTTPS, replace ":80" with {$DOMINIO}
+# (e.g. idiomasug.duckdns.org), publish port 443 and Caddy gets the cert itself.
+:80 {
+	encode gzip
+	handle /api/* {
+		reverse_proxy api:8000
+	}
+	handle {
+		root * /srv
+		file_server
+	}
+}

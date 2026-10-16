@@ -1,0 +1,16 @@
+# Production-like stack on nextcl. MongoDB runs separately (~/inst/mongodb-idiomas).
+# Secrets come from .env (copied by the deploy workflow from ~/idiomas-ug/.env).
+name: idiomas-ug
+
+services:
+  api:
+    build: ./backend
+    env_file: .env
+    restart: unless-stopped
+
+  web:
+    build: ./frontend
+    depends_on: [api]
+    ports:
+      - "0.0.0.0:80:80"   # IPv4 only, same policy as MongoDB
+    restart: unless-stopped
