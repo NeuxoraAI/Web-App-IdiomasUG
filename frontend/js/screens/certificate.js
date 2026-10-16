@@ -1,21 +1,33 @@
-// Certificate overlay: fills the printable sheet and drives the print flow.
+// Certificate overlay: fills the printable sheet from GET /api/nivel and drives the print flow.
 
-import { state, folio } from '../state.js';
+import { state } from '../state.js';
 import { $ } from '../lib/dom.js';
-import { computeResults } from '../data/questions.js';
+import { api } from '../api.js';
 
-export function init() {
+let nav;
+
+export function init(navigation) {
+  nav = navigation;
   $('#cert-print').addEventListener('click', () => window.print());
   $('#cert-close').addEventListener('click', close);
 }
 
-export function open() {
-  const r = computeResults(state.answers);
-  $('#cert-mcer').textContent = r.mcer;
-  $('#cert-level').textContent = r.levelName;
-  $('#cert-folio').textContent = folio();
-  $('#cert-score').textContent = `${r.correct} / ${r.scoredCount}`;
-  $('#cert-date').textContent = new Date().toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
+export async function open() {
+  let n;
+  try {
+    n = await api('GET', '/nivel');
+  } catch (err) {
+    nav.fail(err);
+    return;
+  }
+  $('#cert-name').textContent = n.nombre;
+  $('#cert-mcer').textContent = n.mcer;
+  $('#cert-level').textContent = n.nivel;
+  $('#cert-folio').textContent = n.folio;
+  $('#cert-idioma').textContent = n.idioma;
+  $('#cert-reason-idioma').textContent = n.idioma.toLowerCase();
+  $('#cert-score').textContent = `${n.aciertos} / ${n.calificables}`;
+  $('#cert-date').textContent = new Date(n.fecha).toLocaleDateString('es-MX', { day: 'numeric', month: 'long', year: 'numeric' });
   state.certOpen = true;
   $('#certificate-overlay').hidden = false;
 }

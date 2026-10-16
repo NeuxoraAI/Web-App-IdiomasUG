@@ -3,8 +3,10 @@
 
 export const state = {
   screen: 'login',
-  email: '',
   curp: '',
+  code: '',
+  perfil: null,       // GET /api/perfil
+  resultado: null,    // POST /api/intento/finalizar
 
   // Exam
   q: 0,               // current question index
@@ -30,8 +32,4 @@ export function resetExam() {
   state.playing = false;
 }
 
-// Demo folio derived from the access code typed at login
-export function folio() {
-  const clean = (state.email || '').replace(/[^A-Za-z0-9]/g, '').toUpperCase();
-  return 'EXAUBI-2026B-' + (clean || 'A7K2Q9');
-}
+export const folio = () => state.perfil?.folio || '';

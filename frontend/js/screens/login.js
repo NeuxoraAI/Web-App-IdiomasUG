@@ -19,12 +19,21 @@ let cancelTypers = [];
 export function init(navigation) {
   nav = navigation;
 
-  $('#login-form').addEventListener('submit', (e) => {
+  $('#login-form').addEventListener('submit', async (e) => {
     e.preventDefault();
     closeHelp();
-    nav.showProfile();
+    const button = $('#login-button');
+    button.disabled = true;
+    $('#login-error').hidden = true;
+    try {
+      await nav.login(state.curp, state.code);
+    } catch (err) {
+      showError(err.message);
+    } finally {
+      button.disabled = false;
+    }
   });
-  $('#login-code').addEventListener('input', (e) => { state.email = e.target.value; });
+  $('#login-code').addEventListener('input', (e) => { state.code = e.target.value; });
   $('#login-curp').addEventListener('input', (e) => { state.curp = e.target.value.toUpperCase(); });
 
   $('#help-toggle').addEventListener('click', toggleHelp);
@@ -38,6 +47,12 @@ export function init(navigation) {
   });
 
   renderQuickReplies();
+}
+
+export function showError(message) {
+  const el = $('#login-error');
+  el.textContent = message;
+  el.hidden = false;
 }
 
 export function enter() {

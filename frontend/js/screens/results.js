@@ -1,8 +1,7 @@
 // Results screen: score summary, per-part breakdown, and auto-logout countdown.
 
 import { state } from '../state.js';
-import { $, fmt } from '../lib/dom.js';
-import { computeResults } from '../data/questions.js';
+import { $, esc, fmt } from '../lib/dom.js';
 import * as certificate from './certificate.js';
 
 let nav;
@@ -15,17 +14,17 @@ export function init(navigation) {
 }
 
 export function enter() {
-  const r = computeResults(state.answers);
+  const r = state.resultado;
 
   $('#results-mcer').textContent = r.mcer;
-  $('#results-level').textContent = r.levelName;
+  $('#results-level').textContent = r.nivel;
   $('#results-summary').textContent =
-    `${r.correct} de ${r.scoredCount} respuestas correctas · ${fmt(state.totalSeconds - state.secondsLeft)} utilizados`;
+    `${r.aciertos} de ${r.calificables} respuestas correctas · ${fmt(r.segundos_usados)} utilizados`;
 
-  $('#results-sections').innerHTML = r.sections.map((s) => `
+  $('#results-sections').innerHTML = r.por_parte.map((s) => `
     <div class="results-section">
-      <div class="results-section-head"><span>${s.name}</span><span class="results-section-score">${s.label}</span></div>
-      <div class="results-section-track"><div class="results-section-fill" style="width:${s.pct}%"></div></div>
+      <div class="results-section-head"><span>${esc(s.nombre)}</span><span class="results-section-score">${s.aciertos} / ${s.total}</span></div>
+      <div class="results-section-track"><div class="results-section-fill" style="width:${s.porcentaje}%"></div></div>
     </div>`).join('');
 
   state.closeIn = 20;

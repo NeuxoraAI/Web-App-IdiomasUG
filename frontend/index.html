@@ -63,14 +63,15 @@
         </div>
         <label class="login-code-label">CURP
           <input type="text" id="login-curp" class="login-code-input login-curp-input"
-                 placeholder="ABCD123456HGTXYZ01" maxlength="18"
+                 placeholder="ABCD123456HGTXYZ01" maxlength="18" required
                  autocomplete="off" autocapitalize="characters" spellcheck="false"
                  pattern="[A-Za-z][AEIOUXaeioux][A-Za-z]{2}\d{6}[HMhm][A-Za-z]{2}[B-DF-HJ-NP-TV-ZÑb-df-hj-np-tv-zñ]{3}[A-Za-z\d]\d"
                  title="18 caracteres con el formato oficial de la CURP.">
         </label>
         <label class="login-code-label">Código de acceso
-          <input type="text" id="login-code" class="login-code-input" placeholder="XXXX-XXXX" maxlength="9" autocomplete="one-time-code">
+          <input type="text" id="login-code" class="login-code-input" placeholder="XXXX-XXXX" maxlength="9" autocomplete="one-time-code" required>
         </label>
+        <p id="login-error" class="login-form-error" role="alert" hidden></p>
         <button type="submit" class="btn-primary login-submit" id="login-button"></button>
         <p class="login-form-note">El código es válido para un solo intento y expira al concluir el examen.</p>
       </form>
@@ -127,7 +128,7 @@
       <button id="nav-profile" class="app-nav-link">Perfil</button>
       <button id="nav-test" class="app-nav-link">Examen</button>
       <div class="app-nav-user">
-        <div class="app-nav-avatar">ML</div>
+        <div class="app-nav-avatar" data-initials></div>
         <button id="nav-logout" class="app-nav-logout">Cerrar sesión</button>
       </div>
     </nav>
@@ -139,18 +140,18 @@
     <div class="profile-grid">
       <section class="card profile-card">
         <div class="profile-identity">
-          <div class="profile-avatar">ML</div>
+          <div class="profile-avatar" data-initials></div>
           <div class="profile-names">
-            <div class="profile-name">Mariana López Ruiz</div>
-            <div class="profile-role">Sustentante · EXAUBI 2026B</div>
+            <div class="profile-name" id="profile-name"></div>
+            <div class="profile-role" id="profile-role"></div>
           </div>
         </div>
         <div class="profile-divider"></div>
         <dl class="profile-facts">
           <dt>Folio</dt><dd class="profile-folio" id="profile-folio"></dd>
           <dt>Campus</dt><dd>León</dd>
-          <dt>Idioma</dt><dd>Inglés</dd>
-          <dt>Correo</dt><dd>m.lopezruiz@ugto.mx</dd>
+          <dt>Idioma</dt><dd id="profile-idioma"></dd>
+          <dt>Correo</dt><dd id="profile-correo"></dd>
         </dl>
       </section>
       <div class="profile-main">
@@ -158,15 +159,15 @@
           <div class="profile-exam-head">
             <div class="profile-exam-titles">
               <div class="eyebrow">Examen asignado</div>
-              <h2 class="profile-exam-title">EXAUBI · Inglés</h2>
+              <h2 class="profile-exam-title" id="profile-exam-title"></h2>
             </div>
-            <span class="profile-exam-status">Disponible</span>
+            <span class="profile-exam-status" id="profile-status"></span>
           </div>
           <div class="profile-stats">
             <div class="profile-stat"><span class="profile-stat-label">Duración</span><span class="profile-stat-value"><span id="profile-duration"></span> min</span></div>
             <div class="profile-stat"><span class="profile-stat-label">Preguntas</span><span class="profile-stat-value" id="profile-questions"></span></div>
             <div class="profile-stat"><span class="profile-stat-label">Intento</span><span class="profile-stat-value">Único</span></div>
-            <div class="profile-stat"><span class="profile-stat-label">Fecha límite</span><span class="profile-stat-value">30 sep</span></div>
+            <div class="profile-stat"><span class="profile-stat-label">Fecha límite</span><span class="profile-stat-value" id="profile-deadline"></span></div>
           </div>
           <div class="profile-bee-row">
             <img src="./assets/bee-bot.png" alt="Bee bot" class="profile-bee">
@@ -278,8 +279,8 @@
           <div class="cert-title">Constancia de nivel</div>
           <div class="cert-exam-badge">Examen de ubicación EXAUBI · Nivel Beta Test</div>
           <p class="cert-grant">Se otorga la presente a</p>
-          <div class="cert-name">Mariana López Ruiz</div>
-          <p class="cert-reason">por haber presentado el examen de ubicación de inglés y alcanzado el nivel</p>
+          <div class="cert-name" id="cert-name"></div>
+          <p class="cert-reason">por haber presentado el examen de ubicación de <span id="cert-reason-idioma"></span> y alcanzado el nivel</p>
           <div class="cert-level-row">
             <span class="cert-mcer" id="cert-mcer"></span>
             <span class="cert-level-name" id="cert-level"></span>
@@ -288,7 +289,7 @@
         <div class="cert-foot">
           <div class="cert-facts">
             <div class="cert-fact"><span class="cert-fact-label">Folio</span><span class="cert-fact-value" id="cert-folio"></span></div>
-            <div class="cert-fact"><span class="cert-fact-label">Idioma</span><span class="cert-fact-value">Inglés</span></div>
+            <div class="cert-fact"><span class="cert-fact-label">Idioma</span><span class="cert-fact-value" id="cert-idioma"></span></div>
             <div class="cert-fact"><span class="cert-fact-label">Puntaje</span><span class="cert-fact-value" id="cert-score"></span></div>
             <div class="cert-fact"><span class="cert-fact-label">Fecha</span><span class="cert-fact-value" id="cert-date"></span></div>
           </div>

@@ -1,8 +1,9 @@
 // App entry point: screen navigation and wiring of all screen modules.
 
-import { START_SCREEN, TIMER_MINUTES } from './config.js';
 import { state, resetExam } from './state.js';
 import { $ } from './lib/dom.js';
+import { api, getToken, setToken } from './api.js';
+import { loadExam } from './data/questions.js';
 import * as login from './screens/login.js';
 import * as profile from './screens/profile.js';
 import * as instructions from './screens/instructions.js';
@@ -17,6 +18,8 @@ const SCREENS = {
   test: '#screen-exam',
   results: '#screen-results',
 };
+
+let finishing = false;
 
 function show(screen) {
   const previous = state.screen;
@@ -40,12 +43,32 @@ function show(screen) {
   if (screen === 'profile') profile.enter();
 }
 
+// Expired session -> back to login with the server message; otherwise show it on the profile.
+function fail(err) {
+  if (err.status === 401) {
+    nav.showLogin();
+    login.showError(err.message);
+  } else {
+    nav.showProfile();
+    profile.say(err.message);
+  }
+}
+
 const nav = {
+  async login(curp, clave) {
+    const r = await api('POST', '/sesion', { curp, clave });
+    setToken(r.token);
+    state.perfil = r.perfil;
+    show('profile');
+  },
   showLogin() {
     exam.stop();
     results.stop();
     certificate.close();
-    state.email = '';
+    setToken(null);
+    state.perfil = null;
+    state.resultado = null;
+    state.code = '';
     $('#login-code').value = '';
     show('login');
   },
@@ -55,22 +78,43 @@ const nav = {
     show('profile');
   },
   showIntro() {
+    instructions.enter();
     show('intro');
   },
-  startTest() {
-    resetExam();
-    state.totalSeconds = TIMER_MINUTES * 60;
-    show('test');
-    exam.start();
+  async startTest() {
+    try {
+      const examen = await api('POST', '/intento');
+      resetExam();
+      state.answers = loadExam(examen);
+      state.totalSeconds = state.perfil.examen.duracion_min * 60;
+      state.secondsLeft = examen.segundos_restantes;
+      state.perfil.estado = 'en_curso';
+      finishing = false;
+      show('test');
+      exam.start();
+    } catch (err) {
+      fail(err);
+    }
   },
-  finishTest() {
+  async finishTest() {
+    if (finishing) return;
+    finishing = true;
     exam.stop();
-    show('results');
-    results.enter();
+    try {
+      await exam.flush();
+      state.resultado = await api('POST', '/intento/finalizar');
+      state.perfil.estado = 'finalizado';
+      show('results');
+      results.enter();
+    } catch (err) {
+      finishing = false;
+      fail(err);
+    }
   },
   logout() {
     this.showLogin();
   },
+  fail,
 };
 
 login.init(nav);
@@ -78,17 +122,17 @@ profile.init(nav);
 instructions.init(nav);
 exam.init(nav);
 results.init(nav);
-certificate.init();
+certificate.init(nav);
 
 $('#nav-profile').addEventListener('click', () => nav.showProfile());
 $('#nav-test').addEventListener('click', () => nav.showIntro());
 $('#nav-logout').addEventListener('click', () => nav.logout());
 
-// Boot on the configured start screen
-if (START_SCREEN === 'test') {
-  nav.startTest();
-} else if (START_SCREEN === 'profile' || START_SCREEN === 'intro') {
-  show(START_SCREEN);
+// Boot: a stored token (page reload) goes straight back to the profile.
+if (getToken()) {
+  api('GET', '/perfil')
+    .then((p) => { state.perfil = p; show('profile'); })
+    .catch(() => nav.showLogin());
 } else {
   show('login');
 }
