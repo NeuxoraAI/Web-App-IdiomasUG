@@ -14,7 +14,7 @@ jobs:
   deploy:
     runs-on: self-hosted   # the only org runner: nextcl
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Load server secrets
         run: cp ~/idiomas-ug/.env .env
