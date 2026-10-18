@@ -40,7 +40,14 @@
   mask-image: linear-gradient(160deg, transparent 45%, #000 100%);
   -webkit-mask-image: linear-gradient(160deg, transparent 45%, #000 100%);
   pointer-events: none;
+  animation: dotsDrift 24s linear infinite;
 }
+@keyframes dotsDrift { to { background-position: 22px 44px; } }
+
+/* Staggered entrance: hero blocks, then the access card */
+.login-hero-content > * { animation: riseIn .6s cubic-bezier(.2, .7, .2, 1) both; }
+.login-hero-content > :nth-child(2) { animation-delay: .1s; }
+.login-hero-content > :nth-child(3) { animation-delay: .2s; }
 .login-hero-content {
   position: relative;
   z-index: var(--z-raised);
@@ -122,7 +129,7 @@
 .login-chip.is-active { border-color: var(--gold); background: var(--gold); color: var(--navy); }
 
 .login-footer { display: flex; flex-direction: column; gap: 18px; }
-.login-bee { height: 150px; width: auto; display: block; filter: drop-shadow(0 10px 20px rgba(0, 0, 0, .35)); }
+.login-bee { height: 150px; width: auto; display: block; filter: drop-shadow(0 10px 20px rgba(0, 0, 0, .35)); animation: float 4s ease-in-out infinite; }
 .login-bee-text { display: flex; flex-direction: column; gap: 6px; padding-bottom: 18px; }
 .login-welcome { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-lg); color: var(--gold); }
 .login-invite { font-size: var(--fs-base); color: var(--on-dark-muted); max-width: 320px; line-height: 1.45; }
@@ -161,6 +168,7 @@
   width: 100%;
   max-width: 400px;
   box-shadow: var(--shadow-card), 0 2px 6px rgba(0, 48, 87, .06);
+  animation: riseIn .6s .25s cubic-bezier(.2, .7, .2, 1) both;
 }
 .login-form-head { display: flex; flex-direction: column; gap: var(--space-2); }
 .login-form-hint { margin: 0; font-size: var(--fs-base); color: var(--text-muted); line-height: 1.5; }
