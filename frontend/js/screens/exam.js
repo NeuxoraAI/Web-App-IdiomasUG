@@ -210,7 +210,7 @@ function answerHTML(cur) {
       const used = arr.includes(i);
       const sel = state.pick === i;
       const cls = used ? ' is-used' : sel ? ' is-picked' : ' is-grab';
-      return `<button class="exam-tile${cls}" data-word="${i}" draggable="${!used && !locked}"${dis}>${esc(text)}</button>`;
+      return `<button class="exam-tile${cls}" data-word="${i}" draggable="${!used && !locked}"${usedAttrs(used, dis)}>${esc(text)}</button>`;
     }).join('');
     return `<div class="exam-order">
       <div class="exam-sentence">${sentence}</div>
@@ -225,7 +225,7 @@ function answerHTML(cur) {
     const hint = seq.length === 0 ? '<span class="exam-sequence-hint">Selecciona las palabras en orden…</span>' : '';
     const bank = cur.bank.map((text, i) => {
       const used = seq.includes(i);
-      return `<button class="exam-tile${used ? ' is-used' : ''}" data-word="${i}"${dis}>${esc(text)}</button>`;
+      return `<button class="exam-tile${used ? ' is-used' : ''}" data-word="${i}"${usedAttrs(used, dis)}>${esc(text)}</button>`;
     }).join('');
     return `<div class="exam-order">
       <div class="exam-sequence">${sequence}${hint}</div>
@@ -254,6 +254,12 @@ function answerHTML(cur) {
   }
 
   return '';
+}
+
+// A used bank tile keeps its slot but its text is hidden (color: transparent),
+// so take it out of the tab order and the accessibility tree until it is freed.
+function usedAttrs(used, dis) {
+  return used ? ' disabled aria-hidden="true"' : dis;
 }
 
 function barHTML(cur) {

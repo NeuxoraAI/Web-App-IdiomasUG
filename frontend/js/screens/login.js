@@ -104,6 +104,7 @@ function toggleHelp() {
   const panel = $('#help-panel');
   if (panel.hidden) {
     panel.hidden = false;
+    $('#help-toggle').setAttribute('aria-expanded', 'true');
     openChat();
   } else {
     closeHelp();
@@ -112,6 +113,7 @@ function toggleHelp() {
 
 function closeHelp() {
   $('#help-panel').hidden = true;
+  $('#help-toggle').setAttribute('aria-expanded', 'false');
   stopThinking();
   $('#chat-input').value = '';
 }

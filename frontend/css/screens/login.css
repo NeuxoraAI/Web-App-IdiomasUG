@@ -290,8 +290,11 @@
 }
 
 .chat-footer { padding: var(--space-2) var(--space-4) 14px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid var(--border-chat); flex: none; }
-.chat-quick { display: flex; flex-wrap: wrap; gap: 6px; animation: msgIn .3s ease both; }
+/* Chips stay visually compact (~32px); ::after extends the hit area to --tap.
+   The row gap keeps those hit areas from overlapping between wrapped rows. */
+.chat-quick { display: flex; flex-wrap: wrap; gap: var(--space-4) 6px; padding-block: 6px; animation: msgIn .3s ease both; }
 .chat-quick-btn {
+  position: relative;
   font: inherit;
   font-size: var(--fs-xs);
   font-weight: 600;
@@ -302,6 +305,7 @@
   color: var(--navy);
   text-align: left;
 }
+.chat-quick-btn::after { content: ''; position: absolute; inset: 50% 0 auto; height: var(--tap); transform: translateY(-50%); }
 .chat-quick-btn:hover { border-color: var(--navy); background: var(--selected-bg); }
 .chat-quick-btn--human {
   font-weight: 700;
