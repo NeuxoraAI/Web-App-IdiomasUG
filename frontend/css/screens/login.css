@@ -1,172 +1,139 @@
-/* Login screen: hero (left) + access panel (right) + Bee bot help chat.
-   Intentionally distinct from the in-app shell, but built on the same tokens. */
+/* Login screen, modeled on the Centro de Lenguas site (ugto.mx/campusleon/lenguas):
+   white logo band, navy bar, white title card over language flags, gold steps band,
+   navy footer. The access form stays the focal point. */
 
 .login {
-  --hero-pad: clamp(var(--space-6), 6vw, var(--space-14));
+  --login-inline: max(var(--gutter), calc((100% - 1200px) / 2));   /* centered 1200px content */
   --fab-inset: clamp(var(--space-4), 3vw, var(--space-7));
   --fab-size: 64px;
   min-height: 100vh;
-  display: grid;
-  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-  grid-template-areas: "hero panel";
-}
-.login-hero { grid-area: hero; }
-.login-panel { grid-area: panel; }
-@media (max-width: 900px) {
-  .login { grid-template-columns: minmax(0, 1fr); grid-template-areas: "hero" "panel"; }
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
 }
 
-/* ---- Hero column ---- */
-.login-hero {
-  position: relative;
+/* ---- Logo band + navy bar ---- */
+.login-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-6);
+  padding: var(--space-4) var(--login-inline);
+  background: var(--surface);
+}
+.login-top-ug { height: clamp(72px, 9vw, 104px); width: auto; display: block; }
+.login-top-vida { height: clamp(52px, 6.5vw, 76px); width: auto; display: block; }
+
+.login-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-6);
+  padding: 14px var(--login-inline);
   background: var(--navy);
   color: var(--on-dark);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+  box-shadow: inset 6px 0 0 var(--gold);
 }
-.login-hero-slot { position: absolute; inset: 0; background: var(--navy-dark); }
-.login-hero-gradient {
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(180deg, rgba(0, 48, 87, .96) 0%, rgba(0, 48, 87, .9) 55%, rgba(0, 48, 87, .97) 100%);
-  pointer-events: none;
-}
-.login-hero-dots {
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(253, 210, 110, .28) 1.4px, transparent 1.6px);
-  background-size: 22px 22px;
-  mask-image: linear-gradient(160deg, transparent 45%, #000 100%);
-  -webkit-mask-image: linear-gradient(160deg, transparent 45%, #000 100%);
-  pointer-events: none;
-  animation: dotsDrift 24s linear infinite;
-}
-@keyframes dotsDrift { to { background-position: 22px 44px; } }
+.login-bar-title { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-sm); letter-spacing: .08em; text-transform: uppercase; }
+.login-bar-exam { font-size: var(--fs-sm); font-weight: 600; color: var(--gold); }
 
-/* Staggered entrance: hero blocks, then the access card */
-.login-hero-content > * { animation: riseIn .6s cubic-bezier(.2, .7, .2, 1) both; }
-.login-hero-content > :nth-child(2) { animation-delay: .1s; }
-.login-hero-content > :nth-child(3) { animation-delay: .2s; }
-.login-hero-content {
-  position: relative;
-  z-index: var(--z-raised);
+/* ---- Hero (left) + access form (right) ---- */
+.login-main {
   flex: 1;
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  align-items: center;
+  gap: clamp(var(--space-8), 5vw, var(--space-16));
+  padding: clamp(var(--space-8), 5vw, var(--space-14)) var(--login-inline);
+  background-image: radial-gradient(rgba(0, 48, 87, .07) 1.2px, transparent 1.4px);
+  background-size: 22px 22px;
+}
+@media (max-width: 900px) {
+  /* Phones: title card, then the form, then the flags */
+  .login-main { grid-template-columns: minmax(0, 1fr); }
+  .login-main .login-hero { display: contents; }
+  .login-panel { order: 1; }
+  .login-flags { order: 2; }
+}
+
+.login-hero { display: flex; flex-direction: column; gap: var(--space-6); }
+.login-hero > * { animation: riseIn .6s cubic-bezier(.2, .7, .2, 1) both; }
+.login-hero > :nth-child(2) { animation-delay: .1s; }
+.login-hero > :nth-child(3) { animation-delay: .2s; }
+
+.login-hero-card {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  gap: var(--space-10);
-  padding: 44px var(--hero-pad) 0;
-  pointer-events: none;
+  align-items: center;
+  gap: var(--space-5);
+  padding: clamp(var(--space-6), 4vw, var(--space-10));
+  background: var(--surface);
+  border-radius: 28px;
+  border-bottom: 4px solid var(--gold);
+  box-shadow: var(--shadow-card);
+  text-align: center;
 }
-
-.login-brand { display: flex; align-items: center; gap: 18px; }
-/* The shield is gold on transparent: it sits directly on the navy hero */
-.login-brand-shield { flex: none; display: flex; }
-.login-brand-shield img {
-  height: clamp(80px, 11vw, 112px);
-  width: auto;
-  display: block;
-  filter: drop-shadow(0 6px 18px rgba(253, 210, 110, .22));
-}
-.login-brand-names { display: flex; flex-direction: column; gap: 3px; }
-.login-brand-university {
-  font-family: var(--font-wide);
-  font-size: var(--fs-xs);
-  letter-spacing: .14em;
-  line-height: 1.4;
-  text-transform: uppercase;
-}
-.login-brand-campus {
-  font-family: var(--font-display);
-  font-size: var(--fs-sm);
-  font-weight: 500;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  color: var(--gold);
-}
-
-.login-headline { display: flex; flex-direction: column; gap: var(--space-6); max-width: 520px; }
 .login-title {
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: clamp(22px, 6vw, var(--fs-display));
-  line-height: 1.02;
-  overflow-wrap: break-word;
+  width: 100%;
   margin: 0;
+  font-family: var(--font-condensed);
+  font-weight: 600;
+  font-size: clamp(30px, 4.4vw, 52px);
+  line-height: 1.05;
+  letter-spacing: .01em;
   text-transform: uppercase;
-  letter-spacing: -.01em;
-  min-height: 2.04em;
+  overflow-wrap: break-word;
+  color: var(--navy);
 }
 .login-tagline {
-  align-self: flex-start;
   max-width: 100%;
-  background: var(--gold);
-  color: var(--navy);
+  padding: 12px 28px;
+  border-radius: var(--radius-md);
+  background: var(--navy);
+  color: var(--on-dark);
   font-family: var(--font-display);
   font-weight: 700;
-  font-size: clamp(var(--fs-xs), 3.6vw, 15px);
-  letter-spacing: .14em;
+  font-size: clamp(var(--fs-xs), 1.6vw, var(--fs-base));
+  letter-spacing: .22em;
   text-transform: uppercase;
-  padding: 10px 18px;
-  border-radius: var(--radius-sm);
 }
 /* Long translations must wrap instead of overflowing on phones */
 .login-tagline .flip-face { white-space: normal; }
-.login-chips { display: flex; flex-wrap: wrap; gap: var(--space-2); padding-top: 6px; }
-.login-chip {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--fs-xs);
-  letter-spacing: .06em;
-  padding: 7px var(--space-3);
-  border-radius: var(--radius-pill);
-  transition: background .4s, color .4s, border-color .4s;
-  border: 1px solid var(--on-dark-border);
-  background: transparent;
-  color: var(--on-dark);
-}
-.login-chip.is-active { border-color: var(--gold); background: var(--gold); color: var(--navy); }
 
-.login-footer { display: flex; flex-direction: column; gap: 18px; }
-.login-bee { height: 150px; width: auto; display: block; filter: drop-shadow(0 10px 20px rgba(0, 0, 0, .35)); animation: float 4s ease-in-out infinite; }
-.login-bee-text { display: flex; flex-direction: column; gap: 6px; padding-bottom: 18px; }
-.login-welcome { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-lg); color: var(--gold); }
-.login-invite { font-size: var(--fs-base); color: var(--on-dark-muted); max-width: 320px; line-height: 1.45; }
-
-.login-ribbon {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
-  flex-wrap: wrap;
-  padding: var(--space-4) var(--hero-pad) 18px;
-  margin: 0 calc(-1 * var(--hero-pad));
-  background: var(--gold);
-  color: var(--navy);
-  clip-path: polygon(0 14px, 100% 0, 100% 100%, 0 100%);
-}
-.login-ribbon-hashtag { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-sm); letter-spacing: .04em; padding-top: var(--space-2); }
-.login-ribbon-url { font-size: var(--fs-xs); font-weight: 600; padding-top: var(--space-2); }
-
-/* ---- Access panel column ---- */
-.login-panel {
+/* Language flags: the tile of the language currently shown lights up */
+.login-flags { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: var(--space-3); }
+.login-flag {
+  width: 104px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-10);
-  padding: var(--space-12) var(--gutter) var(--space-7);
-  /* Soft brand tints so the white card lifts off the panel */
-  background:
-    radial-gradient(circle at 85% 10%, rgba(253, 210, 110, .18), transparent 40%),
-    radial-gradient(circle at 10% 90%, rgba(0, 48, 87, .06), transparent 45%),
-    var(--bg);
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-2) 10px;
+  background: var(--surface);
+  border: 2px solid transparent;
+  border-radius: var(--radius-card);
+  box-shadow: 0 2px 8px rgba(0, 48, 87, .08);
+  transition: transform .4s cubic-bezier(.2, .7, .2, 1), border-color .4s, box-shadow .4s;
 }
-.login-form-wrap { flex: 1; display: flex; align-items: center; width: 100%; justify-content: center; }
+.login-flag img { width: 56px; height: 42px; object-fit: cover; display: block; border-radius: 6px; box-shadow: 0 0 0 1px rgba(0, 0, 0, .08); }
+.login-flag-name { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xs); line-height: 1.2; text-align: center; color: var(--navy); }
+.login-flag-name .flip-face { white-space: normal; }
+.login-flag.is-active { border-color: var(--gold); transform: translateY(-4px); box-shadow: 0 10px 24px rgba(0, 48, 87, .16); }
+
+.login-welcome-row { align-items: center; }
+.login-bee { height: 120px; width: auto; display: block; filter: drop-shadow(0 8px 16px rgba(0, 48, 87, .2)); animation: float 4s ease-in-out infinite; }
+.login-bee-text { display: flex; flex-direction: column; gap: 6px; }
+.login-welcome { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-lg); color: var(--navy); }
+.login-invite { font-size: var(--fs-base); color: var(--text-muted); max-width: 360px; line-height: 1.45; }
+@media (max-width: 900px) {
+  .login-welcome-row { display: none; }   /* phones: keep the form close to the top */
+}
+
+.login-panel { display: flex; justify-content: center; }
 .login-form {
   width: 100%;
-  max-width: 400px;
+  max-width: 420px;
   box-shadow: var(--shadow-card), 0 2px 6px rgba(0, 48, 87, .06);
   animation: riseIn .6s .25s cubic-bezier(.2, .7, .2, 1) both;
 }
@@ -198,15 +165,57 @@
 .login-form-note { margin: 0; font-size: var(--fs-sm); color: var(--text-muted); text-align: center; }
 .login-form-error { margin: 0; padding: 10px var(--space-3); border-radius: var(--radius-md); font-size: var(--fs-sm); color: var(--red); background: var(--red-bg); border-left: 3px solid var(--red); animation: shake .4s ease both; }
 
-.login-institutional { display: flex; flex-direction: column; align-items: center; gap: 14px; width: 100%; }
-.login-logos { display: flex; align-items: center; justify-content: center; gap: var(--space-7); flex-wrap: wrap; }
-.login-logo-ug { height: 60px; width: auto; display: block; }
-.login-logo-divider { width: 1px; height: 40px; background: var(--border); }
-/* The asset has an opaque white background: multiply blends it into the tinted panel */
-.login-logo-vida { height: 72px; width: auto; display: block; mix-blend-mode: multiply; }
-.login-powered { font-size: var(--fs-xs); letter-spacing: .06em; text-transform: uppercase; color: var(--text-muted); }
-.login-powered strong { color: var(--navy); font-weight: 600; }
-.login-address { margin: 0; font-size: var(--fs-2xs); line-height: 1.5; color: var(--text-faint); text-align: center; max-width: 460px; }
+/* ---- How it works (gold band) ---- */
+.login-steps {
+  display: grid;
+  gap: var(--space-6);
+  padding: clamp(var(--space-8), 4vw, var(--space-12)) var(--login-inline);
+  background: var(--gold);
+  color: var(--navy);
+}
+.login-steps-title { margin: 0; font-family: var(--font-condensed); font-weight: 600; font-size: clamp(var(--fs-xl), 3vw, 32px); text-transform: uppercase; }
+.login-steps-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--space-6); }
+.login-step { display: flex; align-items: flex-start; gap: var(--space-4); font-size: var(--fs-base); line-height: 1.5; }
+.login-step strong { display: block; font-family: var(--font-display); font-weight: 800; }
+.login-step-num {
+  flex: none;
+  width: var(--tap);
+  height: var(--tap);
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--navy);
+  color: var(--gold);
+  font-family: var(--font-condensed);
+  font-weight: 600;
+  font-size: var(--fs-lg);
+}
+
+/* ---- Footer ---- */
+.login-foot {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: var(--space-6);
+  /* bottom room so the Bee bot button never covers the text */
+  padding: var(--space-10) var(--login-inline) calc(var(--space-10) + var(--fab-size));
+  background: var(--navy-dark);
+  color: var(--on-dark-muted);
+  font-size: var(--fs-sm);
+  line-height: 1.6;
+}
+.login-foot-shield { height: 72px; width: auto; display: block; }
+.login-foot-address { margin: 0; }
+.login-foot-links { display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); }
+.login-foot-links a { color: var(--gold); }
+.login-foot-links a:hover { color: var(--on-dark); }
+.login-foot-hashtag { font-family: var(--font-display); font-weight: 800; color: var(--gold); }
+.login-foot-powered strong { color: var(--on-dark); font-weight: 600; }
+.login-foot :focus-visible { outline-color: var(--gold); }
+@media (max-width: 700px) {
+  .login-foot { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; }
+  .login-foot-links { align-items: center; }
+}
 
 /* ---- Bee bot help ---- */
 .help-toggle {

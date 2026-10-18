@@ -31,15 +31,15 @@ export const FAQS = [
   { key: 'faq_human', q: 'Quiero hablar con una persona de servicios' },
 ];
 
-// [spanish name, native name, language code]
+// [spanish name, native name, language code, flag file in assets/flags]
 export const CHIPS = [
-  ['Inglés', 'English', 'en'],
-  ['Francés', 'Français', 'fr'],
-  ['Alemán', 'Deutsch', 'de'],
-  ['Italiano', 'Italiano', 'it'],
-  ['Portugués', 'Português', 'pt'],
-  ['Japonés', '日本語', 'ja'],
-  ['Chino', '中文', 'zh'],
-  ['Coreano', '한국어', 'ko'],
-  ['Español para extranjeros', 'Español', 'es'],
+  ['Inglés', 'English', 'en', 'us'],
+  ['Francés', 'Français', 'fr', 'fr'],
+  ['Alemán', 'Deutsch', 'de', 'de'],
+  ['Italiano', 'Italiano', 'it', 'it'],
+  ['Portugués', 'Português', 'pt', 'br'],
+  ['Japonés', '日本語', 'ja', 'jp'],
+  ['Chino', '中文', 'zh', 'cn'],
+  ['Coreano', '한국어', 'ko', 'kr'],
+  ['Español para extranjeros', 'Español', 'es', 'mx'],
 ];

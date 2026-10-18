@@ -47,6 +47,9 @@ export function init(navigation) {
   });
 
   renderQuickReplies();
+  // Flags are built once; renderFlips only swaps the names and the active tile
+  $('#login-flags').innerHTML = CHIPS.map(([, , code, flag]) =>
+    `<li class="login-flag" data-lang="${code}"><img src="./assets/flags/${flag}.svg" width="56" height="42" alt=""><span class="login-flag-name"></span></li>`).join('');
 }
 
 export function showError(message) {
@@ -94,11 +97,11 @@ function renderFlips() {
   $('#login-welcome').innerHTML = flipHTML(T.welcome);
   $('#login-title').innerHTML = flipHTML(T.title);
   $('#login-button').innerHTML = flipHTML(T.button);
-  $('#login-chips').innerHTML = CHIPS.map(([es, native, code]) => {
-    const active = LANGS[lang] === code;
-    const texts = LANGS.map((_, k) => (k % 2 ? native : es));
-    return `<span class="login-chip${active ? ' is-active' : ''}">${flipHTML(texts)}</span>`;
-  }).join('');
+  document.querySelectorAll('.login-flag').forEach((tile, i) => {
+    const [es, native, code] = CHIPS[i];
+    tile.classList.toggle('is-active', LANGS[lang] === code);
+    tile.querySelector('.login-flag-name').innerHTML = flipHTML(LANGS.map((_, k) => (k % 2 ? native : es)));
+  });
 }
 
 /* ---- Bee bot chat ---- */

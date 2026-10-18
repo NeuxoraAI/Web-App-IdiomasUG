@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Examen de Idiomas UG · EXAUBI</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Syncopate:wght@400;700&family=Raleway:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Syncopate:wght@400;700&family=Raleway:wght@400;500;600;700;800&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/tokens.css">
 <link rel="stylesheet" href="css/base.css">
 <link rel="stylesheet" href="css/screens/login.css">
@@ -18,42 +18,32 @@
 
 <!-- ============ LOGIN ============ -->
 <section id="screen-login" class="login" hidden>
-  <div class="login-hero">
-    <div class="login-hero-slot"></div>
-    <div class="login-hero-gradient"></div>
-    <div class="login-hero-dots"></div>
-    <div class="login-hero-content">
-      <div class="login-brand">
-        <div class="login-brand-shield">
-          <img src="./assets/escudo-ug.webp" width="150" height="128" alt="Escudo Universidad de Guanajuato">
-        </div>
-        <div class="login-brand-names">
-          <div class="login-brand-university">Universidad de Guanajuato</div>
-          <div class="login-brand-campus">Campus León</div>
-        </div>
-      </div>
-      <div class="login-headline">
+  <header class="login-top">
+    <img src="./assets/escudo-ug.webp" width="150" height="128" alt="Universidad de Guanajuato" class="login-top-ug">
+    <img src="./assets/ecosistema-vida-ug.webp" width="187" height="144" decoding="async" alt="Ecosistema Vida UG · Campus León" class="login-top-vida">
+  </header>
+  <div class="login-bar">
+    <span class="login-bar-title">Centro de Servicios de Lenguas Extranjeras · Campus León</span>
+    <span class="login-bar-exam">Examen de ubicación EXAUBI</span>
+  </div>
+
+  <div class="login-main">
+    <div class="login-hero">
+      <div class="login-hero-card">
         <h1 class="login-title" id="login-center"></h1>
         <div class="login-tagline" id="login-tagline"></div>
-        <div class="login-chips" id="login-chips"></div>
       </div>
-      <div class="login-footer">
-        <div class="bee-row">
-          <img src="./assets/abeja-ok.webp" width="229" height="400" decoding="async" alt="" class="login-bee">
-          <div class="login-bee-text">
-            <span class="login-welcome" id="login-welcome"></span>
-            <span class="login-invite">Tu examen de ubicación EXAUBI te espera. Ingresa tu código para comenzar.</span>
-          </div>
-        </div>
-        <div class="login-ribbon">
-          <span class="login-ribbon-hashtag">#SomosAbejasUG</span>
-          <span class="login-ribbon-url">www.ugto.mx/campusleon/lenguas</span>
+      <ul class="login-flags" id="login-flags" aria-label="Idiomas del Centro"></ul>
+      <div class="bee-row login-welcome-row">
+        <img src="./assets/abeja-ok.webp" width="229" height="400" decoding="async" alt="" class="login-bee">
+        <div class="login-bee-text">
+          <span class="login-welcome" id="login-welcome"></span>
+          <span class="login-invite">Tu examen de ubicación EXAUBI te espera. Ingresa tu código para comenzar.</span>
         </div>
       </div>
     </div>
-  </div>
-  <div class="login-panel">
-    <div class="login-form-wrap">
+
+    <div class="login-panel">
       <form id="login-form" class="card card--accent login-form">
         <div class="login-form-head">
           <div class="eyebrow">EXAUBI 2026B · Inglés</div>
@@ -75,16 +65,26 @@
         <p class="login-form-note">El código es válido para un solo intento y expira al concluir el examen.</p>
       </form>
     </div>
-    <div class="login-institutional">
-      <div class="login-logos">
-        <img src="./assets/escudo-ug.webp" width="150" height="128" loading="lazy" decoding="async" alt="Universidad de Guanajuato" class="login-logo-ug">
-        <div class="login-logo-divider"></div>
-        <img src="./assets/ecosistema-vida-ug.webp" width="187" height="144" loading="lazy" decoding="async" alt="Ecosistema Vida UG · Campus León" class="login-logo-vida">
-      </div>
-      <div class="login-powered">Powered by <strong>Neuxora</strong></div>
-      <p class="login-address">Área de Servicios de Educación para la Vida · CE-VIDA UG-CL · Rectoría Campus León<br>Aquiles Serdán #924, Col. Obregón, León, Gto. · Tel. 477 267 49 00 ext. 4751</p>
-    </div>
   </div>
+
+  <section class="login-steps" aria-labelledby="login-steps-title">
+    <h2 class="login-steps-title" id="login-steps-title">¿Cómo funciona?</h2>
+    <ol class="login-steps-list">
+      <li class="login-step"><span class="login-step-num" aria-hidden="true">1</span><span><strong>Ingresa</strong> con tu CURP y el código de acceso que recibiste en tu correo institucional.</span></li>
+      <li class="login-step"><span class="login-step-num" aria-hidden="true">2</span><span><strong>Lee las instrucciones</strong> y ten a la mano audífonos: hay una sección de comprensión auditiva.</span></li>
+      <li class="login-step"><span class="login-step-num" aria-hidden="true">3</span><span><strong>Responde</strong> en un solo intento antes de que termine el tiempo. Tus respuestas se guardan solas.</span></li>
+    </ol>
+  </section>
+
+  <footer class="login-foot">
+    <img src="./assets/escudo-ug.webp" width="150" height="128" loading="lazy" decoding="async" alt="" class="login-foot-shield">
+    <p class="login-foot-address">Área de Servicios de Educación para la Vida · CE-VIDA UG-CL · Rectoría Campus León<br>Aquiles Serdán #924, Col. Obregón, León, Gto.<br>Tel. 477 267 49 00 ext. 4751 · Lunes a viernes, 9:00–18:00</p>
+    <div class="login-foot-links">
+      <span class="login-foot-hashtag">#SomosAbejasUG</span>
+      <a href="https://www.ugto.mx/campusleon/lenguas/" target="_blank" rel="noopener">www.ugto.mx/campusleon/lenguas</a>
+      <span class="login-foot-powered">Powered by <strong>Neuxora</strong></span>
+    </div>
+  </footer>
 
   <button id="help-toggle" class="help-toggle" aria-label="Ayuda" aria-controls="help-panel" aria-expanded="false">
     <img src="./assets/bee-bot.webp" width="144" height="144" decoding="async" alt="">
