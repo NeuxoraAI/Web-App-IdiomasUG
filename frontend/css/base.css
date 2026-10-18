@@ -238,13 +238,13 @@ input:focus, textarea:focus, select:focus {
   display: inline-block;
   white-space: nowrap;
   backface-visibility: hidden;
-  transform-origin: 50% 50%;
+  /* Pivot half a line behind the text: faces turn like the sides of a cube */
+  transform-origin: 50% 50% -.5em;
 }
 .flip--wrap .flip-face { white-space: normal; text-wrap: balance; }
-.flip-face--in-f { animation: cubeInF 1.4s cubic-bezier(.65, 0, .15, 1) both; }
-.flip-face--in-b { animation: cubeInB 1.4s cubic-bezier(.65, 0, .15, 1) both; }
-.flip-face--out-f { animation: cubeOutF 1.4s cubic-bezier(.65, 0, .15, 1) forwards; pointer-events: none; }
-.flip-face--out-b { animation: cubeOutB 1.4s cubic-bezier(.65, 0, .15, 1) forwards; pointer-events: none; }
+.flip-face--ghost { visibility: hidden; }
+.flip-face--in { animation: cubeIn .9s cubic-bezier(.45, 0, .2, 1) both; will-change: transform, opacity; }
+.flip-face--out { animation: cubeOut .9s cubic-bezier(.45, 0, .2, 1) forwards; will-change: transform, opacity; pointer-events: none; }
 
 /* ---- Keyframes ---- */
 @keyframes caretBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
@@ -255,7 +255,5 @@ input:focus, textarea:focus, select:focus {
 @keyframes panelIn { from { opacity: 0; transform: translateY(12px) scale(.96); } to { opacity: 1; transform: none; } }
 @keyframes shimmer { 0% { background-position: 100% 0; } 100% { background-position: -100% 0; } }
 @keyframes spinDot { 0% { transform: rotate(0) scale(1); } 50% { transform: rotate(180deg) scale(.7); } 100% { transform: rotate(360deg) scale(1); } }
-@keyframes cubeInF { from { transform: rotateX(-90deg) translateY(40%); opacity: 0; } 60% { opacity: 1; } to { transform: none; opacity: 1; } }
-@keyframes cubeOutF { from { transform: none; opacity: 1; } 40% { opacity: 1; } to { transform: rotateX(90deg) translateY(-40%); opacity: 0; } }
-@keyframes cubeInB { from { transform: rotateX(90deg) translateY(-40%); opacity: 0; } 60% { opacity: 1; } to { transform: none; opacity: 1; } }
-@keyframes cubeOutB { from { transform: none; opacity: 1; } 40% { opacity: 1; } to { transform: rotateX(-90deg) translateY(40%); opacity: 0; } }
+@keyframes cubeIn { from { transform: rotateX(-90deg); opacity: 0; } 50% { opacity: 1; } to { transform: none; opacity: 1; } }
+@keyframes cubeOut { from { transform: none; opacity: 1; } 50% { opacity: 1; } to { transform: rotateX(90deg); opacity: 0; } }

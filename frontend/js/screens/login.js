@@ -74,15 +74,18 @@ export function leave() {
 
 /* ---- Language flip ---- */
 
+// Every translation is stacked in the same grid cell; the hidden ones only
+// reserve space, so the box always fits the longest text and never resizes.
 function flipHTML(texts, wrap) {
-  const fwd = lang % 2 === 0;
-  let faces = '';
-  if (prevLang != null && prevLang !== lang) {
-    faces += `<span class="flip-face flip-face--out-${fwd ? 'f' : 'b'}">${esc(texts[prevLang])}</span>`;
-  }
-  const inCls = prevLang != null ? ` flip-face--in-${fwd ? 'f' : 'b'}` : '';
-  faces += `<span class="flip-face${inCls}">${esc(texts[lang])}</span>`;
-  return `<span class="flip${wrap ? ' flip--wrap' : ''}">${faces}</span>`;
+  const cur = texts[lang];
+  const prev = prevLang != null ? texts[prevLang] : null;
+  const faces = [...new Set(texts)].map((t) => {
+    let cls = 'flip-face flip-face--ghost';
+    if (t === cur) cls = prev != null && prev !== cur ? 'flip-face flip-face--in' : 'flip-face';
+    else if (t === prev) cls = 'flip-face flip-face--out';
+    return `<span class="${cls}"${cls.includes('ghost') || t === prev ? ' aria-hidden="true"' : ''}>${esc(t)}</span>`;
+  });
+  return `<span class="flip${wrap ? ' flip--wrap' : ''}">${faces.join('')}</span>`;
 }
 
 function renderFlips() {
