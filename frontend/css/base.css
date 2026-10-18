@@ -52,8 +52,8 @@ input:focus, textarea:focus, select:focus {
   flex: none;
 }
 .app-header-brand { display: flex; align-items: center; gap: 14px; min-height: var(--header-h); }
-.app-header-shield { background: var(--surface); border-radius: var(--radius-md); padding: var(--space-1) var(--space-2); display: flex; align-items: center; flex: none; }
-.app-header-shield img { height: 36px; width: auto; display: block; }
+.app-header-shield { display: flex; align-items: center; flex: none; }
+.app-header-shield img { height: 48px; width: auto; display: block; }
 .app-header-names { display: flex; flex-direction: column; gap: 2px; }
 .app-header-university { font-family: var(--font-wide); font-size: 10px; letter-spacing: .14em; text-transform: uppercase; }
 .app-header-center { font-family: var(--font-display); font-size: var(--fs-sm); font-weight: 500; color: var(--gold); }

@@ -54,17 +54,14 @@
 }
 
 .login-brand { display: flex; align-items: center; gap: 18px; }
-.login-brand-shield {
-  background: var(--surface);
-  border-radius: var(--radius-lg);
-  padding: 10px 14px;
-  flex: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, .25);
+/* The shield is gold on transparent: it sits directly on the navy hero */
+.login-brand-shield { flex: none; display: flex; }
+.login-brand-shield img {
+  height: clamp(80px, 11vw, 112px);
+  width: auto;
+  display: block;
+  filter: drop-shadow(0 6px 18px rgba(253, 210, 110, .22));
 }
-.login-brand-shield img { height: 64px; width: auto; display: block; }
 .login-brand-names { display: flex; flex-direction: column; gap: 3px; }
 .login-brand-university {
   font-family: var(--font-wide);
