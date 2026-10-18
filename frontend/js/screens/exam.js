@@ -128,7 +128,7 @@ export function render() {
   card.innerHTML = `
     <div class="exam-q-head">
       <span class="exam-q-type">${esc(TYPE_LABEL[cur.type])}</span>
-      <h2 class="exam-q-instruction">${esc(cur.ins)}</h2>
+      <h2 class="card-title">${esc(cur.ins)}</h2>
     </div>
     <div class="exam-prompt-row">
       <div class="exam-prompt">
@@ -290,7 +290,7 @@ function barHTML(cur) {
 
   return `<div class="exam-bar">
     ${leftHTML}
-    <button class="exam-primary${primaryCls}" data-action="primary"${primaryDisabled ? ' disabled' : ''}>${primaryLabel}</button>
+    <button class="btn-primary exam-primary${primaryCls}" data-action="primary"${primaryDisabled ? ' disabled' : ''}>${primaryLabel}</button>
   </div>`;
 }
 
