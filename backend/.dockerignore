@@ -1,3 +1,12 @@
-__pycache__/
+# tests/ stays in the image: CI runs pytest inside it.
+**/__pycache__/
+**/*.py[cod]
 .pytest_cache/
+.ruff_cache/
+.mypy_cache/
 .env
+.env.*
+!.env.example
+Dockerfile
+.dockerignore
+**/.DS_Store

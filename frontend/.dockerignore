@@ -1,0 +1,6 @@
+# Only Caddyfile, index.html, assets/, css/ and js/ are copied into the image.
+js/design-reference/
+Dockerfile
+.dockerignore
+**/*.md
+**/.DS_Store
