@@ -5,6 +5,7 @@ Thumbs.db
 # Editors
 .idea/
 *.swp
+.vscode/
 
 # Logs
 *.log
@@ -37,3 +38,4 @@ Proceso_Acceso_Solicitantes_Idiomas_UG.md
 
 # Cosas IA 
 design-reference/
+opencode.jsonc
