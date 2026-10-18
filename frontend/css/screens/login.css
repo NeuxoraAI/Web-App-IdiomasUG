@@ -46,8 +46,36 @@
   align-items: center;
   gap: clamp(var(--space-8), 5vw, var(--space-16));
   padding: clamp(var(--space-8), 5vw, var(--space-14)) var(--login-inline);
-  background-image: radial-gradient(rgba(0, 48, 87, .07) 1.2px, transparent 1.4px);
+  position: relative;
+  isolation: isolate;
+  /* Courtyard of the Centro de Lenguas under a navy veil, so cards stay readable */
+  background:
+    linear-gradient(160deg, rgba(0, 48, 87, .82) 0%, rgba(0, 32, 58, .55) 50%, rgba(0, 32, 58, .85) 100%),
+    url("../../assets/sede-centro-lenguas.webp") center 40% / cover no-repeat,
+    var(--navy-dark);
+}
+/* Drifting gold dots, fading in toward the lower right */
+.login-main::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image: radial-gradient(rgba(253, 210, 110, .32) 1.4px, transparent 1.6px);
   background-size: 22px 22px;
+  mask-image: linear-gradient(160deg, transparent 35%, #000 100%);
+  -webkit-mask-image: linear-gradient(160deg, transparent 35%, #000 100%);
+  animation: dotsDrift 24s linear infinite;
+  pointer-events: none;
+}
+@keyframes dotsDrift { to { background-position: 22px 44px; } }
+
+/* Frosted navy glass shared by the title card and the access form */
+.login-hero-card, .login-form {
+  background: rgba(0, 32, 58, .62);
+  border: 1px solid rgba(255, 255, 255, .14);
+  -webkit-backdrop-filter: blur(12px) saturate(1.2);
+  backdrop-filter: blur(12px) saturate(1.2);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, .35);
 }
 @media (max-width: 900px) {
   /* Phones: title card, then the form, then the flags */
@@ -68,10 +96,8 @@
   align-items: center;
   gap: var(--space-5);
   padding: clamp(var(--space-6), 4vw, var(--space-10));
-  background: var(--surface);
   border-radius: 28px;
   border-bottom: 4px solid var(--gold);
-  box-shadow: var(--shadow-card);
   text-align: center;
 }
 .login-title {
@@ -84,14 +110,14 @@
   letter-spacing: .01em;
   text-transform: uppercase;
   overflow-wrap: break-word;
-  color: var(--navy);
+  color: var(--on-dark);
 }
 .login-tagline {
   max-width: 100%;
   padding: 12px 28px;
   border-radius: var(--radius-md);
-  background: var(--navy);
-  color: var(--on-dark);
+  background: var(--gold);
+  color: var(--navy);
   font-family: var(--font-display);
   font-weight: 700;
   font-size: clamp(var(--fs-xs), 1.6vw, var(--fs-base));
@@ -110,22 +136,24 @@
   align-items: center;
   gap: var(--space-2);
   padding: var(--space-3) var(--space-2) 10px;
-  background: var(--surface);
-  border: 2px solid transparent;
+  background: rgba(0, 32, 58, .45);
+  border: 1px solid var(--on-dark-border);
   border-radius: var(--radius-card);
-  box-shadow: 0 2px 8px rgba(0, 48, 87, .08);
-  transition: transform .4s cubic-bezier(.2, .7, .2, 1), border-color .4s, box-shadow .4s;
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  transition: transform .4s cubic-bezier(.2, .7, .2, 1), background-color .4s, border-color .4s, box-shadow .4s;
 }
 .login-flag img { width: 56px; height: 42px; object-fit: cover; display: block; border-radius: 6px; box-shadow: 0 0 0 1px rgba(0, 0, 0, .08); }
-.login-flag-name { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xs); line-height: 1.2; text-align: center; color: var(--navy); }
+.login-flag-name { font-family: var(--font-display); font-weight: 700; font-size: var(--fs-xs); line-height: 1.2; text-align: center; color: var(--on-dark); transition: color .4s; }
 .login-flag-name .flip-face { white-space: normal; }
-.login-flag.is-active { border-color: var(--gold); transform: translateY(-4px); box-shadow: 0 10px 24px rgba(0, 48, 87, .16); }
+.login-flag.is-active { background: var(--gold); border-color: var(--gold); transform: translateY(-4px); box-shadow: 0 10px 24px rgba(0, 0, 0, .3); }
+.login-flag.is-active .login-flag-name { color: var(--navy); }
 
 .login-welcome-row { align-items: center; }
-.login-bee { height: 120px; width: auto; display: block; filter: drop-shadow(0 8px 16px rgba(0, 48, 87, .2)); animation: float 4s ease-in-out infinite; }
+.login-bee { height: 120px; width: auto; display: block; filter: drop-shadow(0 10px 20px rgba(0, 0, 0, .35)); animation: float 4s ease-in-out infinite; }
 .login-bee-text { display: flex; flex-direction: column; gap: 6px; }
-.login-welcome { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-lg); color: var(--navy); }
-.login-invite { font-size: var(--fs-base); color: var(--text-muted); max-width: 360px; line-height: 1.45; }
+.login-welcome { font-family: var(--font-display); font-weight: 800; font-size: var(--fs-lg); color: var(--gold); }
+.login-invite { font-size: var(--fs-base); color: var(--on-dark-muted); max-width: 360px; line-height: 1.45; }
 @media (max-width: 900px) {
   .login-welcome-row { display: none; }   /* phones: keep the form close to the top */
 }
@@ -134,11 +162,12 @@
 .login-form {
   width: 100%;
   max-width: 420px;
-  box-shadow: var(--shadow-card), 0 2px 6px rgba(0, 48, 87, .06);
+  border-top: 4px solid var(--gold);
+  color: var(--on-dark);
   animation: riseIn .6s .25s cubic-bezier(.2, .7, .2, 1) both;
 }
 .login-form-head { display: flex; flex-direction: column; gap: var(--space-2); }
-.login-form-hint { margin: 0; font-size: var(--fs-base); color: var(--text-muted); line-height: 1.5; }
+.login-form-hint { margin: 0; font-size: var(--fs-base); color: var(--on-dark-muted); line-height: 1.5; }
 .login-code-label { display: flex; flex-direction: column; gap: 6px; font-size: var(--fs-sm); font-weight: 600; }
 .login-code-input {
   font-family: var(--font-display);
@@ -160,9 +189,17 @@
 .login-code-input::placeholder { color: var(--text-disabled); }
 /* Only after the user has typed: red border on a malformed value */
 .login-code-input:user-invalid { border-color: var(--red); }
-.login-code-label:focus-within { color: var(--navy); }
+.login-code-label:focus-within { color: var(--gold); }
+.login-form .eyebrow { color: var(--gold); }
+.login-form .card-title { color: var(--on-dark); }
+.login-form :focus-visible { outline-color: var(--gold); }
+.login-form .login-code-input:focus { border-color: var(--gold) !important; box-shadow: 0 0 0 3px rgba(253, 210, 110, .35); }
+.login-form .btn-primary { background: var(--gold); color: var(--navy); box-shadow: 0 4px 0 var(--gold-dark); }
+.login-form .btn-primary:hover:not(:disabled) { background: var(--gold-hover); box-shadow: 0 5px 0 var(--gold-dark), 0 8px 18px rgba(0, 0, 0, .3); }
+.login-form .btn-primary:active:not(:disabled) { box-shadow: 0 1px 0 var(--gold-dark); }
+.login-form .btn-primary:disabled { background: var(--on-dark-subtle); color: var(--on-dark-muted); box-shadow: none; }
 .login-curp-input { font-size: var(--fs-base); letter-spacing: .08em; padding: var(--space-3) 14px; }
-.login-form-note { margin: 0; font-size: var(--fs-sm); color: var(--text-muted); text-align: center; }
+.login-form-note { margin: 0; font-size: var(--fs-sm); color: var(--on-dark-muted); text-align: center; }
 .login-form-error { margin: 0; padding: 10px var(--space-3); border-radius: var(--radius-md); font-size: var(--fs-sm); color: var(--red); background: var(--red-bg); border-left: 3px solid var(--red); animation: shake .4s ease both; }
 
 /* ---- How it works (gold band) ---- */
