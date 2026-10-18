@@ -2,14 +2,12 @@
 
 import { state } from '../state.js';
 import { $, esc, fmt } from '../lib/dom.js';
-import * as certificate from './certificate.js';
 
 let nav;
 let countdownId = null;
 
 export function init(navigation) {
   nav = navigation;
-  $('#results-cert').addEventListener('click', () => certificate.open());
   $('#results-logout').addEventListener('click', () => nav.logout());
 }
 
@@ -31,7 +29,6 @@ export function enter() {
   $('#results-closein').textContent = state.closeIn;
   clearInterval(countdownId);
   countdownId = setInterval(() => {
-    if (state.certOpen) return; // paused while the certificate is open
     if (state.closeIn <= 1) {
       stop();
       nav.logout();

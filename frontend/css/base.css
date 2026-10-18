@@ -1,4 +1,4 @@
-/* Base: reset, defaults, app shell, shared layout + components, keyframes, print */
+/* Base: reset, defaults, app shell, shared layout + components, keyframes */
 
 * { box-sizing: border-box; }
 
@@ -20,7 +20,7 @@ button:disabled { cursor: not-allowed; }
 
 :focus-visible { outline: var(--focus-outline); outline-offset: 2px; }
 /* Navy outline is invisible on navy surfaces */
-:where(.app-header, .cert-overlay) :focus-visible { outline-color: var(--gold); }
+:where(.app-header) :focus-visible { outline-color: var(--gold); }
 
 input:focus, textarea:focus, select:focus {
   outline: none;
@@ -149,7 +149,7 @@ input:focus, textarea:focus, select:focus {
 .bee-row > .speech-bubble { margin-bottom: var(--space-3); }
 
 /* ---- Buttons ---- */
-.btn-primary, .btn-gold, .btn-outline {
+.btn-primary, .btn-outline {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -166,16 +166,10 @@ input:focus, textarea:focus, select:focus {
 .btn-primary { background: var(--navy); color: var(--on-dark); box-shadow: 0 4px 0 var(--navy-dark); }
 .btn-primary:hover { background: var(--navy-hover); }
 
-.btn-gold { background: var(--gold); color: var(--navy); box-shadow: 0 4px 0 var(--gold-dark); }
-.btn-gold:hover { background: var(--gold-hover); }
-
 .btn-outline { font-weight: 600; padding: var(--space-3) 22px; background: var(--surface); color: var(--navy); border: 2px solid var(--border); }
 .btn-outline:hover { border-color: var(--navy); }
 
-.btn--small { font-size: var(--fs-sm); padding: 10px var(--space-5); }
-.btn-gold.btn--small { box-shadow: 0 3px 0 var(--gold-dark); }
-
-.btn-primary:disabled, .btn-gold:disabled { background: var(--border); color: var(--text-muted); box-shadow: none; }
+.btn-primary:disabled { background: var(--border); color: var(--text-muted); box-shadow: none; }
 
 .btn-link {
   display: inline-flex;
@@ -259,31 +253,3 @@ input:focus, textarea:focus, select:focus {
 @keyframes cubeOutF { from { transform: none; opacity: 1; } 40% { opacity: 1; } to { transform: rotateX(90deg) translateY(-40%); opacity: 0; } }
 @keyframes cubeInB { from { transform: rotateX(90deg) translateY(-40%); opacity: 0; } 60% { opacity: 1; } to { transform: none; opacity: 1; } }
 @keyframes cubeOutB { from { transform: none; opacity: 1; } 40% { opacity: 1; } to { transform: rotateX(-90deg) translateY(40%); opacity: 0; } }
-
-/* ---- Print: only the certificate sheet ---- */
-@media print {
-  @page { size: landscape; margin: 0; }
-  html, body { background: #fff; height: 100vh; overflow: hidden; margin: 0; }
-  body * { visibility: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  [data-certificate], [data-certificate] * { visibility: visible; }
-  .cert-overlay {
-    position: fixed !important;
-    inset: 0 !important;
-    overflow: hidden !important;
-    padding: 0 !important;
-    background: #fff !important;
-    display: block !important;
-  }
-  [data-certificate] {
-    position: fixed;
-    inset: 0;
-    width: 100vw;
-    height: 100vh;
-    max-width: none;
-    aspect-ratio: auto;
-    box-shadow: none;
-    padding: 14px;
-    overflow: hidden;
-  }
-  [data-hide-print] { display: none !important; }
-}

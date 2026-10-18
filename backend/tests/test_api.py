@@ -44,7 +44,7 @@ def test_login_incorrecto(api, db):  # noqa: F811
 
 
 def test_rutas_protegidas_sin_token(api):
-    for metodo, ruta in [("get", "/api/perfil"), ("post", "/api/intento"), ("get", "/api/nivel")]:
+    for metodo, ruta in [("get", "/api/perfil"), ("post", "/api/intento")]:
         assert getattr(api, metodo)(ruta).status_code == 401
 
 
@@ -68,15 +68,9 @@ def test_flujo_completo(api, sesion):
     # Reload resumes the same attempt with saved answers.
     assert api.get("/api/intento").json()["respuestas"]["q01"] == 3
 
-    assert api.get("/api/nivel").status_code == 400  # not finished yet
-
     resultado = api.post("/api/intento/finalizar").json()
     assert resultado["aciertos"] == 8
     assert api.post("/api/intento/finalizar").json() == resultado  # idempotent
-
-    nivel = api.get("/api/nivel").json()
-    assert nivel["mcer"] == resultado["mcer"]
-    assert nivel["folio"] == perfil["folio"]
 
     assert api.post("/api/intento").status_code == 403  # single attempt
     assert api.put("/api/intento/respuestas/q01", json={"valor": 0}).status_code == 409

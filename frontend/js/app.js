@@ -9,7 +9,6 @@ import * as profile from './screens/profile.js';
 import * as instructions from './screens/instructions.js';
 import * as exam from './screens/exam.js';
 import * as results from './screens/results.js';
-import * as certificate from './screens/certificate.js';
 
 const SCREENS = {
   login: '#screen-login',
@@ -64,7 +63,6 @@ const nav = {
   showLogin() {
     exam.stop();
     results.stop();
-    certificate.close();
     setToken(null);
     state.perfil = null;
     state.resultado = null;
@@ -122,7 +120,6 @@ profile.init(nav);
 instructions.init(nav);
 exam.init(nav);
 results.init(nav);
-certificate.init(nav);
 
 $('#nav-profile').addEventListener('click', () => nav.showProfile());
 $('#nav-test').addEventListener('click', () => nav.showIntro());

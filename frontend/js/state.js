@@ -20,7 +20,6 @@ export const state = {
 
   // Results
   closeIn: 20,        // auto-logout countdown on the results screen
-  certOpen: false,
 };
 
 export function resetExam() {

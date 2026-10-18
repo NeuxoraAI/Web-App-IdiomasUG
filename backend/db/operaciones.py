@@ -6,7 +6,7 @@ backend (FastAPI, Flask, etc.) solo tiene que llamarlas desde sus rutas:
     Centro      registrar_asignacion · regenerar_clave · cargar_examen ·
                 publicar_examen · resumen_convocatoria · cerrar_intentos_vencidos
     Sustentante autenticar → iniciar_intento → examen_para_sustentante →
-                guardar_respuesta (×N) → finalizar_intento → datos_certificado
+                guardar_respuesta (×N) → finalizar_intento
 
 Ideas clave de diseño (ver README):
   * Cada escritura toca UN documento, y en MongoDB la escritura sobre un solo

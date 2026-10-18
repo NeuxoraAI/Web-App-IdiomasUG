@@ -152,7 +152,6 @@ El backend (FastAPI, Flask…) aún no existe; cada ruta solo llama una función
 | Cada respuesta | `PUT /api/intento/respuestas/{q}` | `guardar_respuesta` |
 | Guardia anti-IA | `POST /api/intento/incidencias` | `registrar_incidencia` |
 | "Terminar" / fin del tiempo | `POST /api/intento/terminar` | `finalizar_intento` |
-| Certificado | `GET /api/certificado` | `datos_certificado` |
 | Tarea cada minuto | — | `cerrar_intentos_vencidos` |
 | Centro | `/api/admin/…` | `resumen_convocatoria`, `regenerar_clave`, `publicar_examen` |
 
@@ -169,8 +168,8 @@ limitar los intentos de login por IP.
    `izquierdas` + `derechas`.
 3. Las respuestas se identifican por id de pregunta (`"q01"`), no por posición.
 4. El cronómetro arranca con `segundos_restantes` que manda el servidor.
-5. **Folio:** `state.js` lo construye a partir del código de acceso, así que el
-   certificado impreso mostraría el código. Usar el `folio` de la asignación.
+5. **Folio:** `state.js` lo construye a partir del código de acceso, así que la
+   pantalla de perfil mostraría el código. Usar el `folio` de la asignación.
 6. El perfil tiene datos fijos (nombre, idioma, correo, fecha límite): salen de
    la asignación y del examen.
 

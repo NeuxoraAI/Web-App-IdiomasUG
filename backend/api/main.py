@@ -186,9 +186,3 @@ def registrar_incidencia(body: Incidencia, db: DB, asignacion_id: Asignacion) ->
 @app.post("/api/intento/finalizar")
 def finalizar(db: DB, asignacion_id: Asignacion) -> dict:
     return op.finalizar_intento(db, _intento_id(db, asignacion_id))["resultado"]
-
-
-@app.get("/api/nivel")
-def nivel(db: DB, asignacion_id: Asignacion) -> dict:
-    """Language level obtained (MCER) once the exam is finished."""
-    return op.datos_certificado(db, asignacion_id)

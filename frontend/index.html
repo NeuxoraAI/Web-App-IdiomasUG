@@ -13,7 +13,6 @@
 <link rel="stylesheet" href="css/screens/instructions.css">
 <link rel="stylesheet" href="css/screens/exam.css">
 <link rel="stylesheet" href="css/screens/results.css">
-<link rel="stylesheet" href="css/screens/certificate.css">
 </head>
 <body>
 
@@ -249,56 +248,9 @@
       </div>
     </section>
     <div class="actions">
-      <button id="results-cert" class="btn-gold">Descargar certificado de nivel</button>
       <button id="results-logout" class="btn-primary">Cerrar sesión ahora</button>
     </div>
   </main>
-</div>
-
-<!-- ============ CERTIFICATE OVERLAY ============ -->
-<div id="certificate-overlay" class="cert-overlay" hidden>
-  <div class="cert-spacer"></div>
-  <div class="cert-toolbar" data-hide-print="true">
-    <button id="cert-print" class="btn-gold btn--small">Guardar como PDF</button>
-    <button id="cert-close" class="btn-outline btn--small">Cerrar</button>
-  </div>
-  <div class="cert-sheet" data-certificate="true">
-    <div class="cert-frame-outer">
-      <div class="cert-frame-inner">
-        <div class="cert-gold-strip"></div>
-        <div class="cert-head">
-          <img src="https://ugto.mx/campusleon/lenguas/images/escudo-universidad-de-guanajuato.png" width="150" height="128" loading="lazy" decoding="async" alt="Universidad de Guanajuato" class="cert-shield">
-          <div class="cert-university">Universidad de Guanajuato</div>
-          <div class="cert-campus">Campus León · Centro de Servicios de Lenguas Extranjeras</div>
-        </div>
-        <div class="cert-body">
-          <div class="cert-title">Constancia de nivel</div>
-          <div class="cert-exam-badge">Examen de ubicación EXAUBI · Nivel Beta Test</div>
-          <p class="cert-grant">Se otorga la presente a</p>
-          <div class="cert-name" id="cert-name"></div>
-          <p class="cert-reason">por haber presentado el examen de ubicación de <span id="cert-reason-idioma"></span> y alcanzado el nivel</p>
-          <div class="cert-level-row">
-            <span class="cert-mcer" id="cert-mcer"></span>
-            <span class="cert-level-name" id="cert-level"></span>
-          </div>
-        </div>
-        <div class="cert-foot">
-          <div class="cert-facts">
-            <div class="cert-fact"><span class="cert-fact-label">Folio</span><span class="cert-fact-value" id="cert-folio"></span></div>
-            <div class="cert-fact"><span class="cert-fact-label">Idioma</span><span class="cert-fact-value" id="cert-idioma"></span></div>
-            <div class="cert-fact"><span class="cert-fact-label">Puntaje</span><span class="cert-fact-value" id="cert-score"></span></div>
-            <div class="cert-fact"><span class="cert-fact-label">Fecha</span><span class="cert-fact-value" id="cert-date"></span></div>
-          </div>
-          <div class="cert-signatures">
-            <div class="cert-signature"><div class="cert-signature-line"></div><span>Dirección del Centro de Servicios<br>de Lenguas Extranjeras</span></div>
-            <div class="cert-motto">La verdad os hará libres</div>
-            <div class="cert-signature"><div class="cert-signature-line"></div><span>Rectoría<br>Campus León</span></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-  <div class="cert-spacer"></div>
 </div>
 
 <script type="module" src="js/app.js"></script>
