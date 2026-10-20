@@ -7,11 +7,13 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "gen:api": "cd ../backend && python -c \"import json; from api.main import app; print(json.dumps(app.openapi()))\" | npx --yes openapi-typescript@7.13.0 -o ../frontend/src/api/schema.ts"
   },
   "dependencies": {
     "react": "19.3.1",
-    "react-dom": "19.3.1"
+    "react-dom": "19.3.1",
+    "zustand": "5.0.15"
   },
   "devDependencies": {
     "@types/react": "19.3.0",

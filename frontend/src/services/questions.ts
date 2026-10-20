@@ -12,7 +12,7 @@ export interface Question {
   ins: string;
   t: string;
   o?: string[];
-  media?: PreguntaApi['media'];
+  media?: NonNullable<PreguntaApi['media']>;
   segs?: (string | { g: number })[];
   opts?: string[][];
   bank?: string[];
@@ -28,26 +28,28 @@ export interface LoadedExam {
 }
 
 // API question (Spanish schema) -> the compact shape the exam screen renders.
+// The API sends null for fields a question type doesn't use.
 const toQ = (p: PreguntaApi): Question => ({
   id: p.id,
   p: p.parte,
   type: p.tipo,
   ins: p.instruccion,
   t: p.enunciado,
-  o: p.opciones,
-  media: p.media,
+  o: p.opciones ?? undefined,
+  media: p.media ?? undefined,
   segs: p.segmentos?.map((s) => (typeof s === 'string' ? s : { g: s.hueco })),
-  opts: p.opciones_hueco,
-  bank: p.banco,
-  lefts: p.izquierdas,
-  rights: p.derechas,
+  opts: p.opciones_hueco ?? undefined,
+  bank: p.banco ?? undefined,
+  lefts: p.izquierdas ?? undefined,
+  rights: p.derechas ?? undefined,
 });
 
 export function loadExam(examen: Examen): LoadedExam {
   const questions = examen.preguntas.map(toQ);
   const answers: Record<number, Valor> = {};
   questions.forEach((x, i) => {
-    if (x.id in examen.respuestas) answers[i] = examen.respuestas[x.id];
+    const v = examen.respuestas[x.id];
+    if (v != null) answers[i] = v;
   });
   return {
     questions,

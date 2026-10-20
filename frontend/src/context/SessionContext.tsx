@@ -4,6 +4,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState, t
 import { ApiError, api, getToken, setToken } from '../api/client';
 import type { Examen, Perfil, Resultado, SesionRequest, SesionResponse } from '../api/types';
 import { loadExam, type LoadedExam } from '../services/questions';
+import { useExamProgress } from './examProgress';
 
 export type Screen = 'login' | 'profile' | 'intro' | 'test' | 'results';
 
@@ -41,6 +42,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setPerfil(null);
     setResultado(null);
     setExam(null);
+    useExamProgress.getState().reset();
     setLoginError(error);
     setScreen('login');
   }, []);
@@ -68,6 +70,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     try {
       const examen = await api<Examen>('POST', '/intento');
       setExam(loadExam(examen));
+      // Resume where the applicant was: the server knows it across devices,
+      // this tab's copy covers a position save that didn't arrive.
+      const progress = useExamProgress.getState();
+      progress.setQ(Math.max(progress.q, examen.pregunta_actual));
       setPerfil((p) => p && { ...p, estado: 'en_curso' });
       setScreen('test');
     } catch (err) {
@@ -79,6 +85,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     try {
       const r = await api<Resultado>('POST', '/intento/finalizar');
       setResultado(r);
+      useExamProgress.getState().reset();
       setPerfil((p) => p && { ...p, estado: 'finalizado' });
       setScreen('results');
     } catch (err) {
@@ -86,13 +93,17 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     }
   }, [fail]);
 
-  // Boot: a stored token (page reload) goes straight back to the profile.
+  // Boot: a stored token (page reload) resumes an exam in progress, otherwise shows the profile.
   useEffect(() => {
     if (!getToken()) return;
     api<Perfil>('GET', '/perfil')
-      .then((p) => { setPerfil(p); setScreen('profile'); })
+      .then((p) => {
+        setPerfil(p);
+        if (p.estado === 'en_curso') startTest();
+        else setScreen('profile');
+      })
       .catch(() => showLogin());
-  }, [showLogin]);
+  }, [showLogin, startTest]);
 
   const value = useMemo<Session>(() => ({
     screen, curp, setCurp, perfil, resultado, exam, loginError, profileNotice,
