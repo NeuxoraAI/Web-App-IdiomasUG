@@ -5,11 +5,9 @@ Web app para la realización de exámenes de regularización del nivel de difere
 ## Project structure
 
 ```
-frontend/             Static app (HTML/CSS/ES modules), served by nginx
-  index.html          App shell: markup for all screens
-  css/                Design tokens, base styles, one stylesheet per screen
-  js/                 Entry point, config, state, data, helpers, screens
-  assets/             Images used by the app
+frontend/             React + TypeScript app (Vite), served by Caddy
+  index.html          Vite entry
+  src/                api client, context, pages (one per screen), components, hooks, assets
 backend/              Python: MongoDB data layer and applicant loading scripts
   db/                 MongoDB connection, schemas, indexes and operations
   datos/              Seed data (languages, exams)
@@ -19,13 +17,13 @@ backend/              Python: MongoDB data layer and applicant loading scripts
 
 ## Run the frontend
 
-The app is a static site using ES modules, so it must be served over HTTP
-(opening `index.html` directly with `file://` will not load the modules):
+Requires Node 22. The dev server proxies `/api` to the backend on `http://localhost:8000`:
 
 ```sh
 cd frontend
-python3 -m http.server 8000
-# then open http://localhost:8000
+npm install
+npm run dev        # then open http://localhost:5173
+npm run build      # production build into frontend/dist
 ```
 
 ## Base de datos

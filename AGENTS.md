@@ -23,25 +23,27 @@ python scripts/demo.py                    # end-to-end walkthrough, recreates id
 
 Tests need a reachable MongoDB and always use the fixed database `idiomas_ug_test` (DB tests are skipped if no server is available). `CLAVE_PEPPER` defaults to a test value inside the tests.
 
-Frontend (static ES modules, must be served over HTTP):
+Frontend (React + TypeScript, Vite; Node 22):
 
 ```sh
-cd frontend && python3 -m http.server 5500
+cd frontend
+npm install
+npm run dev        # http://localhost:5173, proxies /api to http://localhost:8000 (no CORS setup needed)
+npm run lint       # eslint (typescript-eslint + react-hooks)
+npm run build      # tsc -b typecheck, then vite build into dist/
 ```
-
-`frontend/js/config.js` points to `http://localhost:8000/api` only when the page is on port **5500**; any other port uses same-origin `/api` (the README's port 8000 example collides with the API). Add `http://localhost:5500` to `CORS_ORIGENES` for local dev.
 
 ## Architecture
 
 - **`backend/db/`** — the domain layer. `operaciones.py` holds all business operations (auth, attempts, saving answers, incidents, finalizing, certificates) and raises `ErrorPlataforma` subclasses with user-facing Spanish messages. `calificacion.py` grades on the server; `esquemas.py`/`crear_base_datos.py` define collection validators and indexes; `conexion.py` resolves the DB from env.
 - **`backend/api/main.py`** — thin FastAPI wrapper over `db.operaciones`. Maps `ErrorPlataforma` subclasses to HTTP codes via `_ESTADOS`. Sessions are stateless HMAC tokens (`crear_token`/`leer_token`, signed with `CLAVE_PEPPER`, 4h) sent as `Bearer`. `get_db` is overridden in tests via `app.dependency_overrides`. Health check: `GET /api/salud`.
 - **`backend/scripts/`** — offline admin tools (seed, load applicants from Excel into the DB).
-- **`frontend/`** — vanilla HTML/CSS/JS, no build step, no framework. `index.html` contains markup for every screen; `js/app.js` toggles screens and wires modules; `js/state.js` is a single mutable state object (screens mutate it and re-render themselves, no reactivity); `js/api.js` is the fetch client (token in `sessionStorage`). `js/data/questions.js` adapts the API's Spanish question schema into the compact shape the exam screen renders. **Answer keys never reach the browser** — all scoring happens server-side.
+- **`frontend/`** — React + TypeScript SPA built with Vite, no router and no state library. `src/App.tsx` switches screens from `screen` in `src/context/SessionContext.tsx` (session, profile, result, loaded exam, navigation actions; replaces the old mutable `state.js`). `src/pages/<Screen>/` holds each screen with its co-located CSS (Login + Bee bot `HelpChat`, Profile, Instructions, Exam + per-type `Answer`, Results); the Exam page owns its question index, answers, debounced autosave and the anti-AI copy guard. `src/api/` is the fetch client (token in `sessionStorage`, always same-origin `/api`) plus types mirroring `backend/api/main.py`. `src/services/questions.ts` adapts the API's Spanish question schema into the compact shape the exam renders; `src/data/copy.ts` holds the login/Bee bot copy; `src/hooks/` has `useCountdown` and `useTypewriter`; `src/components/` the shared `AppShell` header and `Flip`/`TypedText`. Global CSS is `src/assets/styles/{tokens,base}.css`. `frontend/design-reference/` is an untracked design prototype, excluded from the build. **Answer keys never reach the browser** — all scoring happens server-side.
 - Exam content lives as JSON in `backend/datos/examenes/` and is loaded into MongoDB.
 
 ## Deploy
 
-Push to `develop` (touching `backend/**`, `frontend/**`, `docker-compose.yml` or the workflow) triggers `.github/workflows/deploy-vps.yml` on the self-hosted runner on the home server `nextcl`: copies `.env` from `~/inst/ug_idiomas_entorno/.env`, builds images, runs pytest inside the `api` container, `docker compose up -d`, then health-checks `/api/salud`. Caddy (`frontend/Caddyfile`) serves static files and proxies `/api/*` to `api:8000`. MongoDB runs in a separate compose stack on the same server, not in this repo's `docker-compose.yml`.
+Push to `develop` (touching `backend/**`, `frontend/**`, `docker-compose.yml` or the workflow) triggers `.github/workflows/deploy-vps.yml` on the self-hosted runner on the home server `nextcl`: copies `.env` from `~/inst/ug_idiomas_entorno/.env`, builds images, runs pytest inside the `api` container, `docker compose up -d`, then health-checks `/api/salud`. The `web` image builds the frontend with `node:22-alpine` (`npm ci && npm run build`) and Caddy (`frontend/Caddyfile`) serves `dist/` as static files and proxies `/api/*` to `api:8000`. MongoDB runs in a separate compose stack on the same server, not in this repo's `docker-compose.yml`.
 
 ## CodeGraph
 

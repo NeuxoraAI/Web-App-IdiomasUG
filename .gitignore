@@ -15,8 +15,9 @@ Thumbs.db
 .env.*
 !.env.example
 
-# Node (si algún día se agrega un bundler)
+# Node (frontend: Vite + React)
 node_modules/
+frontend/dist/
 
 # Python (scripts y tests de carga de solicitantes)
 __pycache__/

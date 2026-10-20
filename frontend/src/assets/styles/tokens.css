@@ -1,0 +1,95 @@
+/* Design tokens — Universidad de Guanajuato institutional palette */
+:root {
+  /* Brand */
+  --navy: #003057;
+  --navy-dark: #00203A;      /* primary button drop shadow, deep hero backdrop */
+  --navy-hover: #00243F;
+  --gold: #FDD26E;
+  --gold-dark: #C9A346;      /* gold badge drop shadow */
+  --gold-hover: #F5C64A;
+  --olive: #9A996E;          /* decorative only (borders, dots): 2.9:1 on white */
+  --olive-ink: #6E6D4A;      /* olive for text: passes WCAG AA on white and --bg */
+
+  /* Surfaces */
+  --bg: #F4F5F7;
+  --surface: #fff;
+  --surface-alt: #F7F8FA;
+  --cream: #FFF8E1;
+  --cream-badge: #FFF3CC;
+  --cream-badge-text: #7A5A00;
+  --selected-bg: #EEF3F8;
+
+  /* Text */
+  --text: #1F2933;
+  --text-muted: #5A6470;
+  --text-faint: #666F7A;
+  --text-disabled: #9AA3AD;  /* disabled controls only, not for readable text */
+  --on-dark: #fff;
+  --on-dark-muted: rgba(255, 255, 255, .8);
+  --on-dark-subtle: rgba(255, 255, 255, .12);
+  --on-dark-border: rgba(255, 255, 255, .4);
+
+  /* Borders */
+  --border: #E1E4E8;
+  --border-input: #CDD3DA;
+  --border-chat: #EEF1F4;
+
+  /* Semantic */
+  --red: #B3261E;
+  --red-bg: #FDF3F2;
+
+  /* Typography */
+  --font-body: 'Source Sans 3', sans-serif;
+  --font-display: 'Raleway', sans-serif;
+  --font-wide: 'Syncopate', sans-serif;
+  --font-condensed: 'Oswald', sans-serif;
+
+  --fs-2xs: 11px;
+  --fs-xs: 12px;
+  --fs-sm: 14px;
+  --fs-base: 16px;
+  --fs-md: 18px;
+  --fs-lg: 20px;
+  --fs-xl: 24px;
+  --fs-2xl: 28px;
+  --fs-display: 44px;
+
+  /* Spacing (4px grid) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 28px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-14: 56px;
+  --space-16: 64px;
+  --gutter: clamp(16px, 4vw, 32px);   /* page side padding: 16px on phones, 32px on desktop */
+
+  /* Layout */
+  --page-w: 820px;
+  --page-w-wide: 1040px;
+  --header-h: 64px;
+  --tap: 44px;               /* minimum tap target */
+
+  /* Recurring shapes */
+  --radius-sm: 4px;
+  --radius-input: 6px;
+  --radius-md: 8px;
+  --radius-card: 10px;
+  --radius-lg: 16px;
+  --radius-pill: 999px;
+  --shadow-card: 0 12px 40px rgba(0, 48, 87, .08);
+  --shadow-float: 0 12px 32px rgba(0, 48, 87, .18);
+  --shadow-toast: 0 10px 30px rgba(0, 32, 58, .3);
+  --focus-ring: 0 0 0 3px rgba(0, 48, 87, .15);
+  --focus-outline: 3px solid var(--navy);
+
+  /* Stacking order */
+  --z-raised: 1;
+  --z-float: 10;             /* Bee bot help toggle + panel */
+  --z-toast: 30;             /* copy-guard flash */
+}
