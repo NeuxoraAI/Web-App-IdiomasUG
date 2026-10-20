@@ -65,8 +65,14 @@ def test_flujo_completo(api, sesion):
     assert api.put("/api/intento/respuestas/q99", json={"valor": 1}).status_code == 422
     assert api.post("/api/intento/incidencias", json={"tipo": "copia"}).status_code == 204
 
-    # Reload resumes the same attempt with saved answers.
-    assert api.get("/api/intento").json()["respuestas"]["q01"] == 3
+    # Reload resumes the same attempt with saved answers and position.
+    assert examen["pregunta_actual"] == 0
+    assert api.put("/api/intento/posicion", json={"pregunta": 4}).status_code == 204
+    assert api.put("/api/intento/posicion", json={"pregunta": 99}).status_code == 204  # out of range: ignored
+    assert api.put("/api/intento/posicion", json={"pregunta": -1}).status_code == 422
+    retomado = api.get("/api/intento").json()
+    assert retomado["respuestas"]["q01"] == 3
+    assert retomado["pregunta_actual"] == 4
 
     resultado = api.post("/api/intento/finalizar").json()
     assert resultado["aciertos"] == 8

@@ -14,6 +14,8 @@ Ideas clave de diseño (ver README):
   * Las reglas importantes ("un solo intento", "sin duplicados") las hace
     cumplir el servidor con índices únicos, no solo el código.
   * El tiempo del examen lo controla el servidor (campo expira_en).
+  * Redis (db/cache.py) guarda copias para leer rápido: siempre se escribe
+    primero en MongoDB y después en la caché (write-through).
 """
 
 from __future__ import annotations
@@ -30,6 +32,7 @@ from pymongo import ReturnDocument
 from pymongo.database import Database
 from pymongo.errors import DuplicateKeyError
 
+from db import cache
 from db.calificacion import calificar
 
 # Margen para respuestas que salen del navegador justo antes de que acabe el tiempo.
@@ -326,28 +329,52 @@ def iniciar_intento(db: Database, asignacion_id: Any, ahora: datetime | None = N
         {"_id": asignacion_id, "estado": "pendiente"},
         {"$set": {"estado": "en_curso", "iniciada_en": ahora}},
     )
+    cache.borrar(db, "perfil", asignacion_id)
     return intento
 
 
 def examen_para_sustentante(db: Database, intento_id: Any, ahora: datetime | None = None) -> dict:
-    """Lo que el navegador necesita para mostrar el examen, SIN respuestas correctas."""
-    ahora = ahora or ahora_utc()
-    intento = db.intentos.find_one({"_id": _id(intento_id)})
-    if intento is None or intento["estado"] != "en_curso":
-        raise IntentoCerrado("Este examen ya terminó")
+    """Lo que el navegador necesita para mostrar el examen, SIN respuestas correctas.
 
-    # Proyección: excluye el campo `respuesta` de cada pregunta embebida.
-    examen = db.examenes.find_one({"_id": intento["examen_id"]}, {"preguntas.respuesta": 0})
+    Se lee de Redis; si no está ahí, de MongoDB, y se deja en la caché.
+    """
+    ahora = ahora or ahora_utc()
+    intento = cache.obtener_intento(db, intento_id)
+    if intento is not None:
+        intento["expira_en"] = datetime.fromisoformat(intento["expira_en"])
+    else:
+        doc = db.intentos.find_one({"_id": _id(intento_id)})
+        if doc is None or doc["estado"] != "en_curso":
+            raise IntentoCerrado("Este examen ya terminó")
+        intento = {
+            "examen_id": doc["examen_id"],
+            "preguntas_ids": doc["preguntas_ids"],
+            "expira_en": doc["expira_en"],
+            "pregunta_actual": doc.get("pregunta_actual", 0),
+            "respuestas": {pid: r["valor"] for pid, r in doc["respuestas"].items()},
+        }
+        meta = {k: intento[k] for k in ("examen_id", "preguntas_ids")}
+        meta["expira_en"] = doc["expira_en"].isoformat()
+        cache.llenar_intento(db, intento_id, meta, intento["respuestas"], intento["pregunta_actual"])
+
+    examen = cache.obtener(db, "examen", intento["examen_id"])
+    if examen is None:
+        # Proyección: excluye el campo `respuesta` de cada pregunta embebida.
+        doc = db.examenes.find_one({"_id": intento["examen_id"]}, {"preguntas.respuesta": 0})
+        examen = {k: doc[k] for k in ("titulo", "partes", "preguntas")}
+        cache.guardar(db, examen, cache.TTL_EXAMEN, "examen", intento["examen_id"])
+
     orden = {pid: i for i, pid in enumerate(intento["preguntas_ids"])}
-    examen["preguntas"].sort(key=lambda p: orden.get(p["id"], len(orden)))
+    preguntas = sorted(examen["preguntas"], key=lambda p: orden.get(p["id"], len(orden)))
 
     return {
-        "intento_id": str(intento["_id"]),
+        "intento_id": str(intento_id),
         "titulo": examen["titulo"],
         "partes": examen["partes"],
-        "preguntas": examen["preguntas"],
+        "preguntas": preguntas,
         "segundos_restantes": max(0, int((intento["expira_en"] - ahora).total_seconds())),
-        "respuestas": {pid: r["valor"] for pid, r in intento["respuestas"].items()},
+        "respuestas": intento["respuestas"],
+        "pregunta_actual": intento["pregunta_actual"],
     }
 
 
@@ -400,6 +427,19 @@ def guardar_respuesta(
         if pregunta_id not in intento["preguntas_ids"]:
             raise DatoInvalido("La pregunta no pertenece a este examen")
         raise IntentoCerrado("El tiempo del examen terminó; tu examen ya fue enviado")
+    cache.escribir_intento(db, intento_id, f"r:{pregunta_id}", valor)
+
+
+def guardar_posicion(db: Database, intento_id: Any, indice: int) -> None:
+    """Recuerda en qué pregunta va la persona, para retomar ahí si se apaga el
+    equipo o entra desde otro. Mejor esfuerzo: si el intento ya cerró o el
+    índice no existe, no se escribe nada."""
+    r = db.intentos.update_one(
+        {"_id": _id(intento_id), "estado": "en_curso", f"preguntas_ids.{int(indice)}": {"$exists": True}},
+        {"$set": {"pregunta_actual": int(indice)}},
+    )
+    if r.matched_count:
+        cache.escribir_intento(db, intento_id, "pos", int(indice))
 
 
 def registrar_incidencia(db: Database, intento_id: Any, tipo: str,
@@ -436,6 +476,11 @@ def finalizar_intento(db: Database, intento_id: Any, ahora: datetime | None = No
         {"$set": {"estado": estado_final, "finalizado_en": ahora}},
         return_document=ReturnDocument.AFTER,
     )
+    # Ya no se aceptan respuestas: la copia en caché deja de servir.
+    # ponytail: una lectura que leyó MongoDB justo antes del cierre puede volver
+    # a llenar la caché unos milisegundos después; las escrituras igual fallan
+    # en MongoDB (409) y la clave vence sola (TTL_INTENTO).
+    cache.borrar(db, "intento", intento_id)
     if intento is None:  # ya estaba cerrado
         intento = db.intentos.find_one({"_id": intento_id})
         if "resultado" in intento:
@@ -451,6 +496,7 @@ def finalizar_intento(db: Database, intento_id: Any, ahora: datetime | None = No
         {"_id": intento["asignacion_id"]},
         {"$set": {"estado": "finalizado", "finalizada_en": intento["finalizado_en"]}},
     )
+    cache.borrar(db, "perfil", intento["asignacion_id"])
     intento["resultado"] = resultado
     return intento
 

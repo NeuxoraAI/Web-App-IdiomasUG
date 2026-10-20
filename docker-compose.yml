@@ -6,6 +6,16 @@ services:
   api:
     build: ./backend
     env_file: .env
+    environment:
+      REDIS_URL: redis://redis:6379/0
+    depends_on: [redis]
+    restart: unless-stopped
+
+  # Write-through cache in front of MongoDB (db/cache.py). Pure cache: no
+  # persistence needed, MongoDB holds every write. Not published to the host.
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
     restart: unless-stopped
 
   web:

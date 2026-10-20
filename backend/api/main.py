@@ -12,7 +12,8 @@ import hmac
 import json
 import os
 import time
-from typing import Annotated, Any
+from datetime import datetime
+from typing import Annotated, Any, Literal
 
 from fastapi import Depends, FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -21,6 +22,7 @@ from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 from pymongo.database import Database
 
+from db import cache
 from db import operaciones as op
 from db.conexion import obtener_db
 
@@ -100,9 +102,14 @@ Asignacion = Annotated[str, Depends(asignacion_actual)]
 
 
 def _intento_id(db: Database, asignacion_id: str) -> Any:
+    # One attempt per assignment and it never changes, so it caches for good.
+    intento_id = cache.obtener(db, "intento_de", asignacion_id)
+    if intento_id is not None:
+        return op._id(intento_id)
     intento = db.intentos.find_one({"asignacion_id": op._id(asignacion_id)}, {"_id": 1})
     if intento is None:
         raise HTTPException(404, "Aún no has iniciado tu examen")
+    cache.guardar(db, str(intento["_id"]), cache.TTL_INTENTO, "intento_de", asignacion_id)
     return intento["_id"]
 
 
@@ -110,17 +117,116 @@ def _intento_id(db: Database, asignacion_id: str) -> Any:
 # Routes
 # ---------------------------------------------------------------------------
 
+# Response models: the browser's data contract. frontend/src/api/schema.ts is
+# generated from them (npm run gen:api). They also act as a whitelist: any
+# field not declared here (e.g. a question's `respuesta`) never leaves the API.
+
+TipoPregunta = Literal["choice", "tf", "listen", "notice", "select", "drag", "order", "match", "short", "essay"]
+# Stored answer: option index, text, or one entry per gap / row / word.
+Valor = int | str | list[int | str | None]
+
+
+class ExamenResumen(BaseModel):
+    titulo: str
+    duracion_min: int
+    preguntas: int
+    disponible_hasta: datetime | None
+
+
+class Perfil(BaseModel):
+    nombre: str
+    correo: str | None
+    folio: str
+    convocatoria: str
+    idioma: str
+    estado: Literal["pendiente", "en_curso", "finalizado", "cancelado"]
+    examen: ExamenResumen | None
+
+
+class Sesion(BaseModel):
+    token: str
+    perfil: Perfil
+
+
+class Media(BaseModel):
+    tipo: Literal["audio", "imagen"]
+    url: str | None = None
+
+
+class Hueco(BaseModel):
+    hueco: int
+
+
+class Palabras(BaseModel):
+    min: int
+    max: int
+
+
+class Pregunta(BaseModel):
+    id: str
+    parte: int
+    tipo: TipoPregunta
+    instruccion: str
+    enunciado: str
+    opciones: list[str] | None = None
+    media: Media | None = None
+    segmentos: list[str | Hueco] | None = None
+    opciones_hueco: list[list[str]] | None = None
+    banco: list[str] | None = None
+    izquierdas: list[str] | None = None
+    derechas: list[str] | None = None
+    palabras: Palabras | None = None
+
+
+class Parte(BaseModel):
+    numero: int
+    nombre: str
+
+
+class Examen(BaseModel):
+    intento_id: str
+    titulo: str
+    partes: list[Parte]
+    preguntas: list[Pregunta]
+    segundos_restantes: int
+    respuestas: dict[str, Valor | None]
+    pregunta_actual: int
+
+
+class ResultadoParte(BaseModel):
+    parte: int
+    nombre: str
+    aciertos: int
+    total: int
+    porcentaje: int
+
+
+class Resultado(BaseModel):
+    aciertos: int
+    calificables: int
+    mcer: str
+    nivel: str
+    por_parte: list[ResultadoParte]
+    pendientes_revision: list[str]
+    segundos_usados: int
+
+
 class Login(BaseModel):
     curp: str = Field(max_length=18)
     clave: str = Field(max_length=20)
 
 
 class Respuesta(BaseModel):
-    valor: Any = None
+    valor: Valor | None = None
 
 
 class Incidencia(BaseModel):
     tipo: str = Field(max_length=40)
+
+
+class Posicion(BaseModel):
+    pregunta: int = Field(ge=0, le=500)
+
 
 
 @app.get("/api/salud")
@@ -130,14 +236,16 @@ def salud(db: DB) -> dict:
 
 
 @app.post("/api/sesion")
-def iniciar_sesion(body: Login, db: DB) -> dict:
+def iniciar_sesion(body: Login, db: DB) -> Sesion:
     asignacion = op.autenticar(db, body.curp, body.clave)
     asignacion_id = str(asignacion["_id"])
     return {"token": crear_token(asignacion_id), "perfil": perfil(db, asignacion_id)}
 
 
 @app.get("/api/perfil")
-def perfil(db: DB, asignacion_id: Asignacion) -> dict:
+def perfil(db: DB, asignacion_id: Asignacion) -> Perfil:
+    if (en_cache := cache.obtener(db, "perfil", asignacion_id)) is not None:
+        return en_cache
     a = db.asignaciones.find_one({"_id": op._id(asignacion_id)})
     if a is None:
         raise HTTPException(401, "Sesión inválida o expirada; vuelve a iniciar sesión")
@@ -146,7 +254,7 @@ def perfil(db: DB, asignacion_id: Asignacion) -> dict:
         {"convocatoria": a["convocatoria"], "idioma": a["idioma"], "estado": "publicado"},
         {"titulo": 1, "duracion_min": 1, "disponible_hasta": 1, "preguntas.id": 1},
     )
-    return {
+    datos = {
         "nombre": a["nombre"],
         "correo": a.get("correo"),
         "folio": a["folio"],
@@ -160,16 +268,18 @@ def perfil(db: DB, asignacion_id: Asignacion) -> dict:
             "disponible_hasta": examen.get("disponible_hasta"),
         },
     }
+    cache.guardar(db, datos, cache.TTL_PERFIL, "perfil", asignacion_id)
+    return datos
 
 
 @app.post("/api/intento")
-def iniciar_intento(db: DB, asignacion_id: Asignacion) -> dict:
+def iniciar_intento(db: DB, asignacion_id: Asignacion) -> Examen:
     intento = op.iniciar_intento(db, asignacion_id)
     return op.examen_para_sustentante(db, intento["_id"])
 
 
 @app.get("/api/intento")
-def ver_intento(db: DB, asignacion_id: Asignacion) -> dict:
+def ver_intento(db: DB, asignacion_id: Asignacion) -> Examen:
     return op.examen_para_sustentante(db, _intento_id(db, asignacion_id))
 
 
@@ -178,11 +288,16 @@ def guardar_respuesta(pregunta_id: str, body: Respuesta, db: DB, asignacion_id: 
     op.guardar_respuesta(db, _intento_id(db, asignacion_id), pregunta_id, body.valor)
 
 
+@app.put("/api/intento/posicion", status_code=204)
+def guardar_posicion(body: Posicion, db: DB, asignacion_id: Asignacion) -> None:
+    op.guardar_posicion(db, _intento_id(db, asignacion_id), body.pregunta)
+
+
 @app.post("/api/intento/incidencias", status_code=204)
 def registrar_incidencia(body: Incidencia, db: DB, asignacion_id: Asignacion) -> None:
     op.registrar_incidencia(db, _intento_id(db, asignacion_id), body.tipo)
 
 
 @app.post("/api/intento/finalizar")
-def finalizar(db: DB, asignacion_id: Asignacion) -> dict:
+def finalizar(db: DB, asignacion_id: Asignacion) -> Resultado:
     return op.finalizar_intento(db, _intento_id(db, asignacion_id))["resultado"]

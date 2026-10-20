@@ -228,6 +228,8 @@ INTENTOS = {
             "iniciado_en": _fecha,
             "expira_en": _fecha,
             "finalizado_en": _fecha,
+            # Índice de la pregunta en la que va la persona (para retomar)
+            "pregunta_actual": {"bsonType": "int", "minimum": 0},
             # Mapa pregunta → respuesta: { "q01": { valor: 3, en: <fecha> }, … }
             "respuestas": {
                 "bsonType": "object",

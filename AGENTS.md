@@ -21,7 +21,7 @@ python scripts/sembrar.py --publicar <examen_id>   # also publish an exam
 python scripts/demo.py                    # end-to-end walkthrough, recreates idiomas_ug_demo
 ```
 
-Tests need a reachable MongoDB and always use the fixed database `idiomas_ug_test` (DB tests are skipped if no server is available). `CLAVE_PEPPER` defaults to a test value inside the tests.
+Tests need a reachable MongoDB and always use the fixed database `idiomas_ug_test` (DB tests are skipped if no server is available). `CLAVE_PEPPER` defaults to a test value inside the tests. `tests/test_cache.py` needs Redis at `REDIS_URL_TEST` (default `redis://localhost:6379/15`, flushed by the tests) and is skipped otherwise.
 
 Frontend (React + TypeScript, Vite; Node 22):
 
@@ -35,7 +35,7 @@ npm run build      # tsc -b typecheck, then vite build into dist/
 
 ## Architecture
 
-- **`backend/db/`** — the domain layer. `operaciones.py` holds all business operations (auth, attempts, saving answers, incidents, finalizing, certificates) and raises `ErrorPlataforma` subclasses with user-facing Spanish messages. `calificacion.py` grades on the server; `esquemas.py`/`crear_base_datos.py` define collection validators and indexes; `conexion.py` resolves the DB from env.
+- **`backend/db/`** — the domain layer. `operaciones.py` holds all business operations (auth, attempts, saving answers, incidents, finalizing, certificates) and raises `ErrorPlataforma` subclasses with user-facing Spanish messages. `calificacion.py` grades on the server; `esquemas.py`/`crear_base_datos.py` define collection validators and indexes; `conexion.py` resolves the DB from env. `cache.py` is a write-through Redis cache (`REDIS_URL`; unset or unreachable = plain MongoDB): operations write MongoDB first, then Redis; attempt state, exam content, profile and the assignment→attempt id are read from Redis with MongoDB fallback.
 - **`backend/api/main.py`** — thin FastAPI wrapper over `db.operaciones`. Maps `ErrorPlataforma` subclasses to HTTP codes via `_ESTADOS`. Sessions are stateless HMAC tokens (`crear_token`/`leer_token`, signed with `CLAVE_PEPPER`, 4h) sent as `Bearer`. `get_db` is overridden in tests via `app.dependency_overrides`. Health check: `GET /api/salud`.
 - **`backend/scripts/`** — offline admin tools (seed, load applicants from Excel into the DB).
 - **`frontend/`** — React + TypeScript SPA built with Vite, no router and no state library. `src/App.tsx` switches screens from `screen` in `src/context/SessionContext.tsx` (session, profile, result, loaded exam, navigation actions; replaces the old mutable `state.js`). `src/pages/<Screen>/` holds each screen with its co-located CSS (Login + Bee bot `HelpChat`, Profile, Instructions, Exam + per-type `Answer`, Results); the Exam page owns its question index, answers, debounced autosave and the anti-AI copy guard. `src/api/` is the fetch client (token in `sessionStorage`, always same-origin `/api`) plus types mirroring `backend/api/main.py`. `src/services/questions.ts` adapts the API's Spanish question schema into the compact shape the exam renders; `src/data/copy.ts` holds the login/Bee bot copy; `src/hooks/` has `useCountdown` and `useTypewriter`; `src/components/` the shared `AppShell` header and `Flip`/`TypedText`. Global CSS is `src/assets/styles/{tokens,base}.css`. `frontend/design-reference/` is an untracked design prototype, excluded from the build. **Answer keys never reach the browser** — all scoring happens server-side.
@@ -43,7 +43,7 @@ npm run build      # tsc -b typecheck, then vite build into dist/
 
 ## Deploy
 
-Push to `develop` (touching `backend/**`, `frontend/**`, `docker-compose.yml` or the workflow) triggers `.github/workflows/deploy-vps.yml` on the self-hosted runner on the home server `nextcl`: copies `.env` from `~/inst/ug_idiomas_entorno/.env`, builds images, runs pytest inside the `api` container, `docker compose up -d`, then health-checks `/api/salud`. The `web` image builds the frontend with `node:22-alpine` (`npm ci && npm run build`) and Caddy (`frontend/Caddyfile`) serves `dist/` as static files and proxies `/api/*` to `api:8000`. MongoDB runs in a separate compose stack on the same server, not in this repo's `docker-compose.yml`.
+Push to `develop` (touching `backend/**`, `frontend/**`, `docker-compose.yml` or the workflow) triggers `.github/workflows/deploy-vps.yml` on the self-hosted runner on the home server `nextcl`: copies `.env` from `~/inst/ug_idiomas_entorno/.env`, builds images, runs pytest inside the `api` container, `docker compose up -d`, then health-checks `/api/salud`. The `web` image builds the frontend with `node:22-alpine` (`npm ci && npm run build`) and Caddy (`frontend/Caddyfile`) serves `dist/` as static files and proxies `/api/*` to `api:8000`. MongoDB runs in a separate compose stack on the same server, not in this repo's `docker-compose.yml`; Redis (cache only, no persistence) is the `redis` service in it.
 
 ## CodeGraph
 
