@@ -1,6 +1,6 @@
-"""HTTP API for applicants (sustentantes). Thin layer over db.operaciones.
+"""API HTTP de sustentantes y personal del Centro. Capa delgada sobre db.operaciones.
 
-Run from backend/:
+Se ejecuta desde backend/:
     uvicorn api.main:app --reload
 """
 
@@ -39,7 +39,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Business errors -> HTTP status. The message is already user-facing (Spanish).
+# Errores de negocio -> código HTTP. El mensaje ya es apto para el usuario.
 _ESTADOS = {
     op.AccesoDenegado: 401,
     op.IntentoNoPermitido: 403,
@@ -62,18 +62,15 @@ def get_db() -> Database:
 
 
 # ---------------------------------------------------------------------------
-# Session token: base64(payload).hmac — stdlib only.
-# ponytail: stateless token can't be revoked before it expires; add a sessions
-# collection if the Centro needs to kick someone out mid-exam.
+# Token de sesión: base64(payload).hmac — solo biblioteca estándar.
+# ponytail: un token sin estado no se puede revocar antes de que expire; agregar
+# una colección de sesiones si el Centro necesita sacar a alguien a mitad del examen.
 # ---------------------------------------------------------------------------
 
 def _firma(datos: bytes, prefijo: bytes = b"sesion|") -> str:
-    pepper = os.environ.get("CLAVE_PEPPER")
-    if not pepper:
-        raise RuntimeError("Falta la variable de entorno CLAVE_PEPPER")
-    # The prefix keeps applicant ("sesion|") and staff ("personal|") tokens, and
-    # access-code hashes, from ever being interchangeable.
-    return hmac.new(pepper.encode(), prefijo + datos, hashlib.sha256).hexdigest()
+    # El prefijo evita que los tokens de sustentante ("sesion|"), los de personal
+    # ("personal|") y los hashes de clave sean intercambiables.
+    return hmac.new(op.pepper(), prefijo + datos, hashlib.sha256).hexdigest()
 
 
 def crear_token(sujeto: str, ahora: float | None = None, *, campo: str = "a", prefijo: bytes = b"sesion|") -> str:
@@ -109,7 +106,7 @@ _BEARER = Depends(HTTPBearer(auto_error=False))
 
 
 def personal_actual(db: DB, cred: Annotated[HTTPAuthorizationCredentials | None, _BEARER]) -> dict:
-    # Re-read on every request so deactivating a user or changing rol applies at once.
+    # Se relee en cada petición: desactivar a alguien o cambiarle el rol aplica al instante.
     uid = leer_token(cred.credentials, campo="u", prefijo=b"personal|") if cred else None
     usuario = op.usuario_activo(db, uid) if uid else None
     if usuario is None:
@@ -126,15 +123,16 @@ def requiere_rol(*roles: str):
 
 
 # ---------------------------------------------------------------------------
-# Routes
+# Rutas
 # ---------------------------------------------------------------------------
 
-# Response models: the browser's data contract. frontend/src/api/schema.ts is
-# generated from them (npm run gen:api). They also act as a whitelist: any
-# field not declared here (e.g. a question's `respuesta`) never leaves the API.
+# Modelos de respuesta: el contrato de datos con el navegador. De ellos se genera
+# frontend/src/api/schema.ts (npm run gen:api). También funcionan como lista
+# blanca: un campo no declarado aquí (p. ej. la `respuesta` de una pregunta)
+# nunca sale de la API.
 
 TipoPregunta = Literal["choice", "tf", "listen", "notice", "select", "drag", "order", "match", "short", "essay"]
-# Stored answer: option index, text, or one entry per gap / row / word.
+# Respuesta guardada: índice de opción, texto o una entrada por hueco / fila / palabra.
 Valor = int | str | list[int | str | None]
 
 
@@ -398,7 +396,7 @@ def regenerar_clave(folio: str, db: DB, _: Admin) -> NuevaClave:
 def _cargar_excel(db: Database, datos: bytes, convocatoria: str) -> dict:
     try:
         df = pd.read_excel(io.BytesIO(datos))
-    except Exception as exc:  # any parse failure is the uploader's file, not our bug
+    except Exception as exc:  # si no se puede leer, el problema es el archivo, no la API
         raise op.DatoInvalido("El archivo no es un Excel válido (.xlsx)") from exc
     filas, errores = procesar(db, df, convocatoria)
     if errores:
@@ -413,8 +411,8 @@ def _cargar_excel(db: Database, datos: bytes, convocatoria: str) -> dict:
     }
 
 
-# Raw .xlsx body (Content-Type: application/octet-stream) instead of a multipart
-# form, so the API needs no python-multipart.
+# El .xlsx llega como cuerpo crudo (Content-Type: application/octet-stream) y no
+# como formulario multipart, así la API no necesita python-multipart.
 @app.post("/api/personal/solicitantes/carga")
 async def cargar_solicitantes(
     request: Request, db: DB, _: Admin,

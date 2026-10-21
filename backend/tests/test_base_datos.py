@@ -58,8 +58,8 @@ def db(cliente):
     # Base fija para que el usuario de la app solo necesite permisos sobre ella.
     nombre = "idiomas_ug_test"
     base = cliente[nombre]
-    # The server occasionally drops a connection mid-setup and DDL commands
-    # (create_collection, collMod) are not retryable, so the whole setup retries.
+    # A veces el servidor corta una conexión a media preparación y los comandos DDL
+    # (create_collection, collMod) no se reintentan solos: se reintenta todo.
     for intento in range(3):
         try:
             cliente.drop_database(nombre)  # por si una corrida anterior se interrumpió
@@ -84,6 +84,15 @@ def _asignacion(db, curp="LOPE020202MGTXXX09", nombre="Ana López", idioma="en")
 # ---------------------------------------------------------------------------
 
 class TestEsquema:
+    def test_indices_de_los_listados_del_panel(self, db):
+        assert {"recientes", "por_estado"} <= set(db.asignaciones.index_information())
+
+    def test_no_encontrado_es_404(self, db):
+        with pytest.raises(op.NoEncontrado):
+            op.publicar_examen(db, "NO-EXISTE")
+        with pytest.raises(op.NoEncontrado):
+            op.iniciar_intento(db, "0" * 24)
+
     def test_rechaza_curp_mal_formada(self, db):
         with pytest.raises(WriteError) as e:
             db.sustentantes.insert_one({"curp": "NO-ES-CURP", "nombre": "X",

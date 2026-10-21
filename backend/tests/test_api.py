@@ -1,4 +1,4 @@
-"""End-to-end tests of the HTTP API against the real test database.
+"""Pruebas de punta a punta de la API HTTP contra la base de pruebas real.
 
     python -m pytest tests/test_api.py -v
 """
@@ -37,7 +37,7 @@ def sesion(api, db):  # noqa: F811
 def test_token_roundtrip_and_tampering():
     t = crear_token("abc", ahora=1000)
     assert leer_token(t, ahora=1001) == "abc"
-    assert leer_token(t, ahora=10**10) is None  # expired
+    assert leer_token(t, ahora=10**10) is None  # expirado
     assert leer_token(t[:-1] + ("0" if t[-1] != "0" else "1"), ahora=1001) is None
     assert leer_token("basura", ahora=1001) is None
 
@@ -60,7 +60,7 @@ def test_flujo_completo(api, sesion):
     assert perfil["idioma"] == "Inglés"
     assert perfil["examen"]["preguntas"] == 10
 
-    assert api.get("/api/intento").status_code == 404  # not started yet
+    assert api.get("/api/intento").status_code == 404  # aún no inicia
 
     examen = api.post("/api/intento").json()
     assert examen["segundos_restantes"] > 0
@@ -71,10 +71,10 @@ def test_flujo_completo(api, sesion):
     assert api.put("/api/intento/respuestas/q99", json={"valor": 1}).status_code == 422
     assert api.post("/api/intento/incidencias", json={"tipo": "copia"}).status_code == 204
 
-    # Reload resumes the same attempt with saved answers and position.
+    # Recargar retoma el mismo intento con sus respuestas y posición.
     assert examen["pregunta_actual"] == 0
     assert api.put("/api/intento/posicion", json={"pregunta": 4}).status_code == 204
-    assert api.put("/api/intento/posicion", json={"pregunta": 99}).status_code == 204  # out of range: ignored
+    assert api.put("/api/intento/posicion", json={"pregunta": 99}).status_code == 204  # fuera de rango: se ignora
     assert api.put("/api/intento/posicion", json={"pregunta": -1}).status_code == 422
     retomado = api.get("/api/intento").json()
     assert retomado["respuestas"]["q01"] == 3
@@ -82,14 +82,14 @@ def test_flujo_completo(api, sesion):
 
     resultado = api.post("/api/intento/finalizar").json()
     assert resultado["aciertos"] == 8
-    assert api.post("/api/intento/finalizar").json() == resultado  # idempotent
+    assert api.post("/api/intento/finalizar").json() == resultado  # idempotente
 
-    assert api.post("/api/intento").status_code == 403  # single attempt
+    assert api.post("/api/intento").status_code == 403  # un solo intento
     assert api.put("/api/intento/respuestas/q01", json={"valor": 0}).status_code == 409
 
 
 # ---------------------------------------------------------------------------
-# Personal (staff)
+# Personal del Centro
 # ---------------------------------------------------------------------------
 
 def _login_personal(api, correo="ana@ugto.mx", clave="clave-larga-123"):
@@ -116,7 +116,7 @@ def test_personal_clave_incorrecta_o_inactivo(api, db, personal):  # noqa: F811
     token = _login_personal(api).json()["token"]
     db.usuarios.update_one({"_id": personal["_id"]}, {"$set": {"activo": False}})
     assert _login_personal(api).status_code == 401
-    # an already-issued token stops working as soon as the user is deactivated
+    # un token ya emitido deja de servir en cuanto se desactiva al usuario
     assert api.get("/api/personal/yo", headers={"Authorization": f"Bearer {token}"}).status_code == 401
 
 
@@ -136,7 +136,7 @@ def test_requiere_rol():
 
 
 # ---------------------------------------------------------------------------
-# Panel: exams with grades, applicants and the access-key Excel
+# Panel: exámenes con calificación, solicitantes y Excel de claves
 # ---------------------------------------------------------------------------
 
 def _bearer(api, correo, clave="clave-larga-123"):
@@ -168,13 +168,13 @@ def test_carga_genera_excel_con_claves(api, admin):
     assert len(salida) == 10
     assert datos["registrados"] + len(datos["errores"]) == 10
     ingles = salida[salida["Idioma"] == "Inglés"]
-    assert list(ingles["Clave"])[0] == "CURP inválida"  # rejected rows carry their error
+    assert list(ingles["Clave"])[0] == "CURP inválida"  # los renglones rechazados llevan su error
     ingles = ingles[ingles["Folio"].notna()]
     assert len(ingles) == 1 and ingles["Folio"].str.startswith("EXAUBI-2026B-").all()
-    # the generated key is the applicant's real access key
+    # la clave generada es la clave de acceso real del solicitante
     fila = ingles.iloc[0]
     assert api.post("/api/sesion", json={"curp": fila["CURP"], "clave": fila["Clave"]}).status_code == 200
-    # the same file again: everything already registered, no new keys
+    # el mismo archivo otra vez: todo ya registrado, sin claves nuevas
     otra = _cargar(api, admin).json()
     assert otra["registrados"] == 0 and len(otra["errores"]) == 10
 
@@ -263,7 +263,7 @@ def test_regenerar_clave_solicitante(api, admin, profesor):
     r = api.post(ruta, headers=admin)
     assert r.status_code == 200, r.text
     nueva = r.json()["clave"]
-    # the new key works and the old one no longer does
+    # la clave nueva funciona y la anterior ya no
     assert api.post("/api/sesion", json={"curp": fila["CURP"], "clave": nueva}).status_code == 200
     assert api.post("/api/sesion", json={"curp": fila["CURP"], "clave": fila["Clave"]}).status_code == 401
     assert api.post("/api/personal/solicitantes/NO-EXISTE/clave", headers=admin).status_code == 404

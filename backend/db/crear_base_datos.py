@@ -7,7 +7,7 @@ Uso (desde la raíz del repositorio):
     python -m db.crear_base_datos
 """
 
-from pymongo import ASCENDING, IndexModel
+from pymongo import ASCENDING, DESCENDING, IndexModel
 from pymongo.database import Database
 
 from db.esquemas import VALIDADORES
@@ -43,6 +43,9 @@ INDICES: dict[str, list[IndexModel]] = {
         IndexModel([("folio", ASCENDING)], unique=True, name="folio_unico"),
         IndexModel([("convocatoria", ASCENDING), ("idioma", ASCENDING), ("estado", ASCENDING)],
                    name="listado_por_convocatoria"),
+        # Listados del panel: solicitantes más recientes y exámenes iniciados/terminados.
+        IndexModel([("creada_en", DESCENDING)], name="recientes"),
+        IndexModel([("estado", ASCENDING)], name="por_estado"),
     ],
     "intentos": [
         # "Un solo intento": la base rechaza un segundo intento para la misma asignación.

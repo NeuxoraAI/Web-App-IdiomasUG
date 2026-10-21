@@ -100,19 +100,24 @@ def normalizar_clave(clave: str) -> str:
     return re.sub(r"[^A-Z0-9]", "", str(clave or "").upper())
 
 
+def pepper() -> bytes:
+    """Secreto del servidor (CLAVE_PEPPER): firma los hashes de clave y los tokens de sesión."""
+    valor = os.environ.get("CLAVE_PEPPER")
+    if not valor:
+        raise RuntimeError(
+            "Falta la variable de entorno CLAVE_PEPPER (ver .env.example). "
+            "Debe ser la misma en todos los servidores y no cambiar durante la convocatoria."
+        )
+    return valor.encode()
+
+
 def hash_clave(clave: str) -> str:
     """HMAC-SHA256 de la clave con un secreto del servidor (CLAVE_PEPPER).
 
     La base nunca guarda la clave en texto plano: si alguien obtiene una copia
     de la base, no puede usar las claves para entrar a exámenes ajenos.
     """
-    pepper = os.environ.get("CLAVE_PEPPER")
-    if not pepper:
-        raise RuntimeError(
-            "Falta la variable de entorno CLAVE_PEPPER (ver .env.example). "
-            "Debe ser la misma en todos los servidores y no cambiar durante la convocatoria."
-        )
-    return hmac.new(pepper.encode(), normalizar_clave(clave).encode(), hashlib.sha256).hexdigest()
+    return hmac.new(pepper(), normalizar_clave(clave).encode(), hashlib.sha256).hexdigest()
 
 
 _CARACTERES_CLAVE = "23456789ABCDEFGHJKMNPQRSTUVWXYZ"  # sin ambiguos: 0/O, 1/I/L
@@ -245,7 +250,7 @@ def publicar_examen(db: Database, examen_id: str) -> None:
             "Ya hay otro examen publicado para ese idioma y convocatoria; archívalo primero."
         ) from exc
     if r.matched_count == 0:
-        raise ErrorPlataforma(f"No existe el examen {examen_id}")
+        raise NoEncontrado(f"No existe el examen {examen_id}")
 
 
 # ---------------------------------------------------------------------------
@@ -403,7 +408,7 @@ def iniciar_intento(db: Database, asignacion_id: Any, ahora: datetime | None = N
     asignacion_id = _id(asignacion_id)
     asignacion = db.asignaciones.find_one({"_id": asignacion_id})
     if asignacion is None:
-        raise ErrorPlataforma("Asignación inexistente")
+        raise NoEncontrado("Asignación inexistente")
 
     previo = db.intentos.find_one({"asignacion_id": asignacion_id})
     if previo is not None:

@@ -1,4 +1,4 @@
-"""Redis write-through cache, against a real Redis (skipped if none is reachable).
+"""Caché write-through de Redis, contra un Redis real (se omite si no hay uno disponible).
 
     REDIS_URL_TEST=redis://localhost:6379/15 python -m pytest tests/test_cache.py -v
 """
@@ -35,14 +35,14 @@ def _clave_intento(db, examen):  # noqa: F811
 def test_write_through_y_lectura_desde_cache(r, api, sesion, db):  # noqa: F811
     examen = api.post("/api/intento").json()
     clave = _clave_intento(db, examen)
-    assert r.hget(clave, "meta")  # first read filled the cache
+    assert r.hget(clave, "meta")  # la primera lectura llenó la caché
 
     assert api.put("/api/intento/respuestas/q01", json={"valor": 3}).status_code == 204
     assert api.put("/api/intento/posicion", json={"pregunta": 2}).status_code == 204
     assert r.hget(clave, "r:q01") == "3" and r.hget(clave, "pos") == "2"
 
-    # MongoDB is written too (write-through), and reads now come from Redis:
-    # a change made only in MongoDB is not seen while the cache holds the attempt.
+    # También se escribe en MongoDB (write-through) y las lecturas ya vienen de Redis:
+    # un cambio hecho solo en MongoDB no se ve mientras la caché tenga el intento.
     intento = db.intentos.find_one({}, {"respuestas": 1, "pregunta_actual": 1})
     assert intento["respuestas"]["q01"]["valor"] == 3 and intento["pregunta_actual"] == 2
     db.intentos.update_one({}, {"$set": {"pregunta_actual": 7}})
@@ -61,7 +61,7 @@ def test_finalizar_borra_la_cache(r, api, sesion, db):  # noqa: F811
 
 
 def test_sin_redis_sigue_funcionando(monkeypatch, api, sesion):  # noqa: F811
-    monkeypatch.setenv("REDIS_URL", "redis://localhost:1/0")  # nothing listens here
+    monkeypatch.setenv("REDIS_URL", "redis://localhost:1/0")  # aquí no escucha nadie
     cache._clientes.clear()
     assert api.post("/api/intento").status_code == 200
     assert api.put("/api/intento/respuestas/q01", json={"valor": 3}).status_code == 204
