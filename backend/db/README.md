@@ -3,15 +3,15 @@
 Capa de base de datos para la plataforma de exámenes de ubicación **EXAUBI** del
 Centro de Servicios de Lenguas Extranjeras (UG Campus León).
 
-Todos los comandos se ejecutan desde la carpeta **`backend/`**. Reutiliza
-`scripts/cargar_solicitantes.py` (validación de CURP y formato de clave) y el
-Excel de prueba `tests/fixtures/alumnos_solicitantes.xlsx`.
+Todos los comandos se ejecutan desde la carpeta **`backend/`**. El Excel de
+prueba es `tests/fixtures/alumnos_solicitantes.xlsx`.
 
 ```
 db/
   conexion.py            ← conexión a MongoDB (lee .env)
   esquemas.py            ← reglas de validación de cada colección ($jsonSchema)
   crear_base_datos.py    ← crea colecciones, validadores e índices
+  carga.py               ← carga de solicitantes desde Excel (CURP, registro, Excel de claves)
   calificacion.py        ← califica en el servidor (misma lógica que questions.js)
   operaciones.py         ← cada paso de la plataforma: login, iniciar, responder, terminar…
 scripts/
@@ -82,8 +82,7 @@ Se puede ejecutar cuantas veces se quiera. Un examen que ya tiene intentos
 python scripts/cargar_solicitantes_db.py solicitantes.xlsx --convocatoria 2026B -o codigos_acceso.xlsx
 ```
 
-Mismas validaciones y mensajes que `cargar_solicitantes.py`, más:
-los idiomas válidos salen de la colección `idiomas`; cada renglón válido queda
+Valida CURP (formato y dígito verificador), nombre, idioma y correo; los idiomas válidos salen de la colección `idiomas`; cada renglón válido queda
 en la base con un folio consecutivo (`EXAUBI-2026B-0001`); volver a cargar el
 mismo archivo no duplica (*"Ya registrado en la base"*). Columna opcional `Correo`.
 

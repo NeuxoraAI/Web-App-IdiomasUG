@@ -233,6 +233,28 @@ def test_carga_correo_invalido_es_error_de_fila(api, admin, tmp_path):
     assert r.json()["errores"][0]["error"] == "Correo inválido"
 
 
+def test_carga_error_de_mongo_en_un_renglon_no_pierde_las_claves(api, admin, monkeypatch):
+    import db.carga
+    from pymongo.errors import AutoReconnect
+
+    real, llamadas = db.carga.registrar_asignacion, []
+
+    def falla_la_primera(*args, **kwargs):
+        llamadas.append(1)
+        if len(llamadas) == 1:
+            raise AutoReconnect("conexión cerrada")
+        return real(*args, **kwargs)
+
+    monkeypatch.setattr(db.carga, "registrar_asignacion", falla_la_primera)
+    r = _cargar(api, admin)
+    assert r.status_code == 200, r.text
+    datos = r.json()
+    assert datos["registrados"] >= 1
+    assert "No se pudo guardar; vuelve a cargar este renglón" in [e["error"] for e in datos["errores"]]
+    salida = pd.read_excel(io.BytesIO(base64.b64decode(datos["excel"])), dtype=str)
+    assert salida["Folio"].notna().sum() == datos["registrados"]
+
+
 def test_regenerar_clave_solicitante(api, admin, profesor):
     salida = pd.read_excel(io.BytesIO(base64.b64decode(_cargar(api, admin).json()["excel"])), dtype=str)
     fila = salida[salida["Folio"].notna()].iloc[0]

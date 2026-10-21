@@ -33,7 +33,7 @@ ESTADOS_EXAMEN = ["borrador", "publicado", "archivado"]
 ESTADOS_ASIGNACION = ["pendiente", "en_curso", "finalizado", "cancelado"]
 ESTADOS_INTENTO = ["en_curso", "enviado", "tiempo_agotado"]
 
-# Misma estructura que valida scripts/cargar_solicitantes.py (versión compacta).
+# Versión compacta de la que valida db/carga.py (que también revisa el dígito verificador).
 PATRON_CURP = r"^[A-Z][AEIOUX][A-Z]{2}\d{6}[HM][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[A-Z\d]\d$"
 PATRON_PREGUNTA_ID = r"^q\d{2,3}$"
 PATRON_CORREO = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"

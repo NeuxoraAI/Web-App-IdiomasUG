@@ -28,7 +28,7 @@ from starlette.concurrency import run_in_threadpool
 from db import cache
 from db import operaciones as op
 from db.conexion import obtener_db
-from scripts.cargar_solicitantes_db import generar_excel_salida, procesar
+from db.carga import generar_excel_salida, procesar
 
 SESION_HORAS = 4
 

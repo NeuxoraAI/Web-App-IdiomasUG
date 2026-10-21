@@ -111,6 +111,16 @@ def hash_clave(clave: str) -> str:
     return hmac.new(pepper.encode(), normalizar_clave(clave).encode(), hashlib.sha256).hexdigest()
 
 
+_CARACTERES_CLAVE = "23456789ABCDEFGHJKMNPQRSTUVWXYZ"  # sin ambiguos: 0/O, 1/I/L
+
+
+def generar_clave(segmentos: int = 2) -> str:
+    """Clave de acceso aleatoria (secrets), formato XXXX-XXXX."""
+    return "-".join(
+        "".join(secrets.choice(_CARACTERES_CLAVE) for _ in range(4)) for _ in range(segmentos)
+    )
+
+
 # ---------------------------------------------------------------------------
 # Personal del Centro (admin / profesor)
 # ---------------------------------------------------------------------------
@@ -248,10 +258,8 @@ def registrar_asignacion(
     Devuelve (asignación, clave_en_texto_plano). La clave en texto plano solo
     existe en este momento: se entrega en el Excel de salida y no se guarda.
     Los datos deben llegar ya validados (CURP con formato correcto, idioma
-    activo); de eso se encarga scripts/cargar_solicitantes_db.py.
+    activo); de eso se encarga db/carga.py.
     """
-    from scripts.cargar_solicitantes import generar_clave  # reutiliza el formato XXXX-XXXX
-
     ahora = ahora or ahora_utc()
 
     if db.asignaciones.find_one({"curp": curp, "convocatoria": convocatoria, "idioma": idioma},
@@ -298,8 +306,6 @@ def registrar_asignacion(
 
 def regenerar_clave(db: Database, asignacion_id: Any) -> str:
     """Nueva clave para quien perdió la suya (solo si aún no inicia el examen)."""
-    from scripts.cargar_solicitantes import generar_clave
-
     for _ in range(5):
         clave = generar_clave()
         try:

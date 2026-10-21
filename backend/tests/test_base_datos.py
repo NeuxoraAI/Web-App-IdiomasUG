@@ -23,7 +23,7 @@ os.environ.setdefault("CLAVE_PEPPER", "pepper-de-pruebas")
 from db import operaciones as op  # noqa: E402
 from db.calificacion import calificar, es_correcta  # noqa: E402
 from db.conexion import obtener_cliente  # noqa: E402
-from scripts.cargar_solicitantes_db import procesar  # noqa: E402
+from db.carga import procesar  # noqa: E402
 from scripts.sembrar import sembrar  # noqa: E402
 
 EXAMEN_ID = "EXAUBI-2026B-en-v1"

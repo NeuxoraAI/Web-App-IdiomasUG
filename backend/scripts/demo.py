@@ -25,7 +25,8 @@ os.environ.setdefault("CLAVE_PEPPER", "solo-para-la-demo")
 
 from db import operaciones as op  # noqa: E402
 from db.conexion import obtener_db, verificar_conexion  # noqa: E402
-from scripts.cargar_solicitantes_db import imprimir_resumen, procesar  # noqa: E402
+from db.carga import procesar  # noqa: E402
+from scripts.cargar_solicitantes_db import imprimir_resumen  # noqa: E402
 from scripts.sembrar import sembrar  # noqa: E402
 
 DB_DEMO = "idiomas_ug_demo"
