@@ -26,7 +26,7 @@
 .panel-body { display: grid; gap: var(--space-3); padding: var(--space-3); }
 
 /* Toolbar: search takes the free space, selects and counter size to content. */
-.panel-filtros { display: grid; grid-template-columns: minmax(200px, 1fr) repeat(3, auto); align-items: center; gap: var(--space-2); }
+.panel-filtros { display: grid; grid-template-columns: minmax(140px, 1fr) repeat(3, auto); align-items: center; gap: var(--space-2); }
 .panel-conteo { font-size: var(--fs-sm); color: var(--text-muted); }
 
 .panel-lista { display: grid; gap: var(--space-3); min-width: 0; }

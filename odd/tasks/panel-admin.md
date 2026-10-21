@@ -17,7 +17,7 @@ Objective: make the staff panel tabs functional. Branch: develop (local commits,
 
 - [x] T1 (S1-S4 backend) — inline — commits 8a51d5d, fix (see L4) — endpoints `GET /api/personal/examenes`, `GET /api/personal/solicitantes`, `POST /api/personal/solicitantes/carga` + tests. Risk: item 2.
 - [x] T2 (S1-S4 frontend) — inline — commit 29aa6bf — Panel tabs Exámenes / Solicitantes.
-- [ ] T3 (S5-S6) — inline — `POST /api/personal/solicitantes/{folio}/clave` + estado filter + regenerate button + grid layout. Risk: item 2.
+- [x] T3 (S5-S6) — inline — commits 42725ff, 377f09d, follow-up — `POST /api/personal/solicitantes/{folio}/clave` + estado filter + regenerate button + grid layout. Risk: item 2.
 
 ## Log
 
@@ -28,3 +28,4 @@ Objective: make the staff panel tabs functional. Branch: develop (local commits,
 - L5: RDD assess high (item 2 escalated); native review consent: declined for this candidate (7cd45e4..4cce065). Push/deploy left to the user.
 - L6 (2026-10-20): "Excelente, tambien ahi mismo estará la tabla de usuarios y sus claves de acceso para poder ver los activos recuerda usar grid layout para tener todo mejor organizado"
 - L7: Plaintext keys don't exist in the DB (hash-only rule). User chose "Regenerar bajo demanda (Recommended)" over storing encrypted keys or status-only.
+- L8: T3 GREEN: backend 115 passed, lint/build clean. Independent verifier: S5/S6 PASS, no blockers. Fixed advisories: estado filter offers only states present; toolbar min width. Open advisory: an already-open applicant session (stateless token, 4h) survives key regeneration — pre-existing design.

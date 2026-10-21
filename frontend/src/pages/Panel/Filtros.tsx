@@ -13,15 +13,16 @@ export function useFiltro<T extends Fila>(filas: T[]) {
   const [idioma, setIdioma] = useState('');
   const [estado, setEstado] = useState('');
   const idiomas = useMemo(() => [...new Set(filas.map((f) => f.idioma))].sort(), [filas]);
+  const estados = useMemo(() => Object.keys(ESTADOS).filter((e) => filas.some((f) => f.estado === e)), [filas]);
   const visibles = useMemo(() => {
     const t = normalizar(q.trim());
     return filas.filter((f) => (!idioma || f.idioma === idioma) && (!estado || f.estado === estado)
       && (!t || normalizar(`${f.nombre} ${f.curp} ${f.folio}`).includes(t)));
   }, [filas, q, idioma, estado]);
-  return { q, setQ, idioma, setIdioma, estado, setEstado, idiomas, visibles };
+  return { q, setQ, idioma, setIdioma, estado, setEstado, idiomas, estados, visibles };
 }
 
-export function Filtros({ q, setQ, idioma, setIdioma, estado, setEstado, idiomas, total, visibles }:
+export function Filtros({ q, setQ, idioma, setIdioma, estado, setEstado, idiomas, estados, total, visibles }:
   Omit<ReturnType<typeof useFiltro>, 'visibles'> & { total: number; visibles: number }) {
   return (
     <div className="panel-filtros">
@@ -33,7 +34,7 @@ export function Filtros({ q, setQ, idioma, setIdioma, estado, setEstado, idiomas
       </select>
       <select className="panel-input" aria-label="Estado" value={estado} onChange={(e) => setEstado(e.target.value)}>
         <option value="">Todos los estados</option>
-        {Object.entries(ESTADOS).map(([v, t]) => <option key={v} value={v}>{t}</option>)}
+        {estados.map((e) => <option key={e} value={e}>{ESTADOS[e]}</option>)}
       </select>
       <span className="panel-conteo">{visibles} de {total}</span>
     </div>
