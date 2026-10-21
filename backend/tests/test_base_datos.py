@@ -314,7 +314,7 @@ class TestFlujoSustentante:
 
     def test_regenerar_clave(self, db):
         asignacion, vieja = _asignacion(db)
-        nueva = op.regenerar_clave(db, asignacion["_id"])
+        nueva = op.regenerar_clave(db, asignacion["folio"])
         assert nueva != vieja
         with pytest.raises(op.AccesoDenegado):
             op.autenticar(db, "LOPE020202MGTXXX09", vieja)

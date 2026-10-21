@@ -5,7 +5,7 @@ backend (FastAPI, Flask, etc.) solo tiene que llamarlas desde sus rutas:
 
     Centro      registrar_asignacion · regenerar_clave · cargar_examen ·
                 publicar_examen · resumen_convocatoria · cerrar_intentos_vencidos
-    Sustentante autenticar → iniciar_intento → examen_para_sustentante →
+    Sustentante autenticar → perfil → iniciar_intento → examen_para_sustentante →
                 guardar_respuesta (×N) → finalizar_intento
 
 Ideas clave de diseño (ver README):
@@ -71,6 +71,10 @@ class IntentoCerrado(ErrorPlataforma):
 
 
 class DatoInvalido(ErrorPlataforma):
+    pass
+
+
+class NoEncontrado(ErrorPlataforma):
     pass
 
 
@@ -164,6 +168,12 @@ def crear_usuario(db: Database, *, correo: str, nombre: str, rol: str, clave: st
     except DuplicateKeyError as exc:
         raise YaRegistrado("Ya existe un usuario con ese correo") from exc
     return usuario
+
+
+def usuario_activo(db: Database, usuario_id: Any) -> dict | None:
+    """El usuario de un token de personal, o None si ya no existe o fue desactivado."""
+    usuario = db.usuarios.find_one({"_id": _id(usuario_id)})
+    return usuario if usuario and usuario["activo"] else None
 
 
 _HASH_SENUELO = hash_clave_personal(secrets.token_hex(16))
@@ -304,13 +314,15 @@ def registrar_asignacion(
     raise RuntimeError("No se pudo generar una clave única tras varios intentos")
 
 
-def regenerar_clave(db: Database, asignacion_id: Any) -> str:
+def regenerar_clave(db: Database, folio: str) -> str:
     """Nueva clave para quien perdió la suya (solo si aún no inicia el examen)."""
+    if db.asignaciones.find_one({"folio": folio}, {"_id": 1}) is None:
+        raise NoEncontrado("No existe ese folio")
     for _ in range(5):
         clave = generar_clave()
         try:
             r = db.asignaciones.update_one(
-                {"_id": _id(asignacion_id), "estado": "pendiente"},
+                {"folio": folio, "estado": "pendiente"},
                 {"$set": {"clave_hash": hash_clave(clave)}},
             )
         except DuplicateKeyError:
@@ -336,6 +348,48 @@ def autenticar(db: Database, curp: str, clave: str) -> dict:
     if asignacion["estado"] == "cancelado":
         raise AccesoDenegado("Este código fue cancelado; comunícate con el Centro")
     return asignacion
+
+
+def perfil(db: Database, asignacion_id: Any) -> dict:
+    """Datos de la pantalla de perfil: la asignación y su examen publicado (si hay)."""
+    if (en_cache := cache.obtener(db, "perfil", asignacion_id)) is not None:
+        return en_cache
+    a = db.asignaciones.find_one({"_id": _id(asignacion_id)})
+    if a is None:
+        raise AccesoDenegado("Sesión inválida o expirada; vuelve a iniciar sesión")
+    idioma = db.idiomas.find_one({"_id": a["idioma"]}, {"nombre": 1}) or {}
+    examen = db.examenes.find_one(
+        {"convocatoria": a["convocatoria"], "idioma": a["idioma"], "estado": "publicado"},
+        {"titulo": 1, "duracion_min": 1, "disponible_hasta": 1, "preguntas.id": 1},
+    )
+    datos = {
+        "nombre": a["nombre"],
+        "correo": a.get("correo"),
+        "folio": a["folio"],
+        "convocatoria": a["convocatoria"],
+        "idioma": idioma.get("nombre", a["idioma"]),
+        "estado": a["estado"],
+        "examen": examen and {
+            "titulo": examen["titulo"],
+            "duracion_min": examen["duracion_min"],
+            "preguntas": len(examen["preguntas"]),
+            "disponible_hasta": examen.get("disponible_hasta"),
+        },
+    }
+    cache.guardar(db, datos, cache.TTL_PERFIL, "perfil", asignacion_id)
+    return datos
+
+
+def intento_de(db: Database, asignacion_id: Any) -> ObjectId:
+    """Id del intento de una asignación. Hay uno solo y nunca cambia: se cachea."""
+    intento_id = cache.obtener(db, "intento_de", asignacion_id)
+    if intento_id is not None:
+        return _id(intento_id)
+    intento = db.intentos.find_one({"asignacion_id": _id(asignacion_id)}, {"_id": 1})
+    if intento is None:
+        raise NoEncontrado("Aún no has iniciado tu examen")
+    cache.guardar(db, str(intento["_id"]), cache.TTL_INTENTO, "intento_de", asignacion_id)
+    return intento["_id"]
 
 
 def iniciar_intento(db: Database, asignacion_id: Any, ahora: datetime | None = None) -> dict:

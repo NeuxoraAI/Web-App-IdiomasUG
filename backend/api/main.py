@@ -14,7 +14,7 @@ import json
 import os
 import time
 from datetime import datetime
-from typing import Annotated, Any, Literal
+from typing import Annotated, Literal
 
 import pandas as pd
 from fastapi import Depends, FastAPI, HTTPException, Query, Request
@@ -25,7 +25,6 @@ from pydantic import BaseModel, Field
 from pymongo.database import Database
 from starlette.concurrency import run_in_threadpool
 
-from db import cache
 from db import operaciones as op
 from db.conexion import obtener_db
 from db.carga import generar_excel_salida, procesar
@@ -48,6 +47,7 @@ _ESTADOS = {
     op.IntentoCerrado: 409,
     op.YaRegistrado: 409,
     op.DatoInvalido: 422,
+    op.NoEncontrado: 404,
 }
 
 
@@ -111,8 +111,8 @@ _BEARER = Depends(HTTPBearer(auto_error=False))
 def personal_actual(db: DB, cred: Annotated[HTTPAuthorizationCredentials | None, _BEARER]) -> dict:
     # Re-read on every request so deactivating a user or changing rol applies at once.
     uid = leer_token(cred.credentials, campo="u", prefijo=b"personal|") if cred else None
-    usuario = db.usuarios.find_one({"_id": op._id(uid)}) if uid else None
-    if usuario is None or not usuario["activo"]:
+    usuario = op.usuario_activo(db, uid) if uid else None
+    if usuario is None:
         raise HTTPException(401, "Sesión inválida o expirada; vuelve a iniciar sesión")
     return usuario
 
@@ -123,18 +123,6 @@ def requiere_rol(*roles: str):
             raise HTTPException(403, "No tienes permiso para esta sección")
         return usuario
     return dependencia
-
-
-def _intento_id(db: Database, asignacion_id: str) -> Any:
-    # One attempt per assignment and it never changes, so it caches for good.
-    intento_id = cache.obtener(db, "intento_de", asignacion_id)
-    if intento_id is not None:
-        return op._id(intento_id)
-    intento = db.intentos.find_one({"asignacion_id": op._id(asignacion_id)}, {"_id": 1})
-    if intento is None:
-        raise HTTPException(404, "Aún no has iniciado tu examen")
-    cache.guardar(db, str(intento["_id"]), cache.TTL_INTENTO, "intento_de", asignacion_id)
-    return intento["_id"]
 
 
 # ---------------------------------------------------------------------------
@@ -327,7 +315,7 @@ def salud(db: DB) -> dict:
 def iniciar_sesion(body: Login, db: DB) -> Sesion:
     asignacion = op.autenticar(db, body.curp, body.clave)
     asignacion_id = str(asignacion["_id"])
-    return {"token": crear_token(asignacion_id), "perfil": perfil(db, asignacion_id)}
+    return {"token": crear_token(asignacion_id), "perfil": op.perfil(db, asignacion_id)}
 
 
 def _usuario(u: dict) -> dict:
@@ -348,32 +336,7 @@ def personal_yo(usuario: Annotated[dict, Depends(personal_actual)]) -> Usuario:
 
 @app.get("/api/perfil")
 def perfil(db: DB, asignacion_id: Asignacion) -> Perfil:
-    if (en_cache := cache.obtener(db, "perfil", asignacion_id)) is not None:
-        return en_cache
-    a = db.asignaciones.find_one({"_id": op._id(asignacion_id)})
-    if a is None:
-        raise HTTPException(401, "Sesión inválida o expirada; vuelve a iniciar sesión")
-    idioma = db.idiomas.find_one({"_id": a["idioma"]}, {"nombre": 1}) or {}
-    examen = db.examenes.find_one(
-        {"convocatoria": a["convocatoria"], "idioma": a["idioma"], "estado": "publicado"},
-        {"titulo": 1, "duracion_min": 1, "disponible_hasta": 1, "preguntas.id": 1},
-    )
-    datos = {
-        "nombre": a["nombre"],
-        "correo": a.get("correo"),
-        "folio": a["folio"],
-        "convocatoria": a["convocatoria"],
-        "idioma": idioma.get("nombre", a["idioma"]),
-        "estado": a["estado"],
-        "examen": examen and {
-            "titulo": examen["titulo"],
-            "duracion_min": examen["duracion_min"],
-            "preguntas": len(examen["preguntas"]),
-            "disponible_hasta": examen.get("disponible_hasta"),
-        },
-    }
-    cache.guardar(db, datos, cache.TTL_PERFIL, "perfil", asignacion_id)
-    return datos
+    return op.perfil(db, asignacion_id)
 
 
 @app.post("/api/intento")
@@ -384,27 +347,27 @@ def iniciar_intento(db: DB, asignacion_id: Asignacion) -> Examen:
 
 @app.get("/api/intento")
 def ver_intento(db: DB, asignacion_id: Asignacion) -> Examen:
-    return op.examen_para_sustentante(db, _intento_id(db, asignacion_id))
+    return op.examen_para_sustentante(db, op.intento_de(db, asignacion_id))
 
 
 @app.put("/api/intento/respuestas/{pregunta_id}", status_code=204)
 def guardar_respuesta(pregunta_id: str, body: Respuesta, db: DB, asignacion_id: Asignacion) -> None:
-    op.guardar_respuesta(db, _intento_id(db, asignacion_id), pregunta_id, body.valor)
+    op.guardar_respuesta(db, op.intento_de(db, asignacion_id), pregunta_id, body.valor)
 
 
 @app.put("/api/intento/posicion", status_code=204)
 def guardar_posicion(body: Posicion, db: DB, asignacion_id: Asignacion) -> None:
-    op.guardar_posicion(db, _intento_id(db, asignacion_id), body.pregunta)
+    op.guardar_posicion(db, op.intento_de(db, asignacion_id), body.pregunta)
 
 
 @app.post("/api/intento/incidencias", status_code=204)
 def registrar_incidencia(body: Incidencia, db: DB, asignacion_id: Asignacion) -> None:
-    op.registrar_incidencia(db, _intento_id(db, asignacion_id), body.tipo)
+    op.registrar_incidencia(db, op.intento_de(db, asignacion_id), body.tipo)
 
 
 @app.post("/api/intento/finalizar")
 def finalizar(db: DB, asignacion_id: Asignacion) -> Resultado:
-    return op.finalizar_intento(db, _intento_id(db, asignacion_id))["resultado"]
+    return op.finalizar_intento(db, op.intento_de(db, asignacion_id))["resultado"]
 
 
 # ---------------------------------------------------------------------------
@@ -429,10 +392,7 @@ def solicitantes(db: DB, _: Admin) -> list[Solicitante]:
 
 @app.post("/api/personal/solicitantes/{folio}/clave")
 def regenerar_clave(folio: str, db: DB, _: Admin) -> NuevaClave:
-    a = db.asignaciones.find_one({"folio": folio}, {"_id": 1})
-    if a is None:
-        raise HTTPException(404, "No existe ese folio")
-    return {"clave": op.regenerar_clave(db, a["_id"])}
+    return {"clave": op.regenerar_clave(db, folio)}
 
 
 def _cargar_excel(db: Database, datos: bytes, convocatoria: str) -> dict:
