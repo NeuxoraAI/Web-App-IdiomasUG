@@ -625,3 +625,48 @@ def resumen_convocatoria(db: Database, convocatoria: str) -> list[dict]:
         {"$sort": {"idioma": 1}},
     ]
     return list(db.asignaciones.aggregate(pipeline))
+
+
+# ---------------------------------------------------------------------------
+# Panel del Centro: listados
+# ---------------------------------------------------------------------------
+
+_NOMBRE_IDIOMA = [
+    {"$lookup": {"from": "idiomas", "localField": "idioma",
+                 "foreignField": "_id", "as": "idioma_doc"}},
+    {"$set": {"idioma": {"$ifNull": [{"$first": "$idioma_doc.nombre"}, "$idioma"]}}},
+]
+
+
+def listar_solicitantes(db: Database) -> list[dict]:
+    """Asignaciones registradas, las más recientes primero (sin clave_hash)."""
+    pipeline = [
+        {"$sort": {"creada_en": -1}},
+        *_NOMBRE_IDIOMA,
+        {"$project": {"_id": 0, "folio": 1, "curp": 1, "nombre": 1, "correo": 1,
+                      "idioma": 1, "convocatoria": 1, "estado": 1, "creada_en": 1}},
+    ]
+    return list(db.asignaciones.aggregate(pipeline))
+
+
+def examenes_presentados(db: Database) -> list[dict]:
+    """Exámenes iniciados o terminados con su calificación, los más recientes primero."""
+    pipeline = [
+        {"$match": {"estado": {"$in": ["en_curso", "finalizado"]}}},
+        {"$lookup": {"from": "intentos", "localField": "_id",
+                     "foreignField": "asignacion_id", "as": "intento"}},
+        {"$unwind": "$intento"},
+        *_NOMBRE_IDIOMA,
+        {"$project": {
+            "_id": 0, "folio": 1, "curp": 1, "nombre": 1, "idioma": 1,
+            "convocatoria": 1, "estado": 1,
+            "aciertos": "$intento.resultado.aciertos",
+            "calificables": "$intento.resultado.calificables",
+            "mcer": "$intento.resultado.mcer",
+            "nivel": "$intento.resultado.nivel",
+            "iniciado_en": "$intento.iniciado_en",
+            "finalizado_en": "$intento.finalizado_en",
+        }},
+        {"$sort": {"iniciado_en": -1}},
+    ]
+    return list(db.asignaciones.aggregate(pipeline))

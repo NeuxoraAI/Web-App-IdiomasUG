@@ -23,6 +23,7 @@ import os
 import sys
 from dataclasses import dataclass
 from pathlib import Path
+from typing import BinaryIO
 
 import pandas as pd
 
@@ -117,7 +118,7 @@ def procesar(db, df: pd.DataFrame, convocatoria: str, prefijo: str = "EXAUBI"
     return filas, []
 
 
-def generar_excel_salida(filas: list[FilaCarga], ruta: Path) -> None:
+def generar_excel_salida(filas: list[FilaCarga], ruta: Path | BinaryIO) -> None:
     pd.DataFrame([{
         "CURP": f.curp,
         "Nombre": f.nombre,

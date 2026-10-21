@@ -9,22 +9,26 @@ from __future__ import annotations
 import base64
 import hashlib
 import hmac
+import io
 import json
 import os
 import time
 from datetime import datetime
 from typing import Annotated, Any, Literal
 
-from fastapi import Depends, FastAPI, HTTPException, Request
+import pandas as pd
+from fastapi import Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
 from pymongo.database import Database
+from starlette.concurrency import run_in_threadpool
 
 from db import cache
 from db import operaciones as op
 from db.conexion import obtener_db
+from scripts.cargar_solicitantes_db import generar_excel_salida, procesar
 
 SESION_HORAS = 4
 
@@ -265,6 +269,49 @@ class Posicion(BaseModel):
     pregunta: int = Field(ge=0, le=500)
 
 
+EstadoAsignacion = Literal["pendiente", "en_curso", "finalizado", "cancelado"]
+
+
+class ExamenPresentado(BaseModel):
+    folio: str
+    curp: str
+    nombre: str
+    idioma: str
+    convocatoria: str
+    estado: EstadoAsignacion
+    aciertos: int | None = None
+    calificables: int | None = None
+    mcer: str | None = None
+    nivel: str | None = None
+    iniciado_en: datetime | None = None
+    finalizado_en: datetime | None = None
+
+
+class Solicitante(BaseModel):
+    folio: str
+    curp: str
+    nombre: str
+    correo: str | None = None
+    idioma: str
+    convocatoria: str
+    estado: EstadoAsignacion
+    creada_en: datetime
+
+
+class ErrorCarga(BaseModel):
+    fila: int
+    curp: str
+    nombre: str
+    idioma: str
+    error: str
+
+
+class Carga(BaseModel):
+    registrados: int
+    errores: list[ErrorCarga]
+    excel: str = Field(description="Output .xlsx (base64): the only plain-text copy of the access keys")
+
+
 
 @app.get("/api/salud")
 def salud(db: DB) -> dict:
@@ -354,3 +401,54 @@ def registrar_incidencia(body: Incidencia, db: DB, asignacion_id: Asignacion) ->
 @app.post("/api/intento/finalizar")
 def finalizar(db: DB, asignacion_id: Asignacion) -> Resultado:
     return op.finalizar_intento(db, _intento_id(db, asignacion_id))["resultado"]
+
+
+# ---------------------------------------------------------------------------
+# Panel del Centro
+# ---------------------------------------------------------------------------
+
+Personal = Annotated[dict, Depends(requiere_rol("admin", "profesor"))]
+Admin = Annotated[dict, Depends(requiere_rol("admin"))]
+
+MAX_EXCEL = 5 * 1024 * 1024
+
+
+@app.get("/api/personal/examenes")
+def examenes_presentados(db: DB, _: Personal) -> list[ExamenPresentado]:
+    return op.examenes_presentados(db)
+
+
+@app.get("/api/personal/solicitantes")
+def solicitantes(db: DB, _: Admin) -> list[Solicitante]:
+    return op.listar_solicitantes(db)
+
+
+def _cargar_excel(db: Database, datos: bytes, convocatoria: str) -> dict:
+    try:
+        df = pd.read_excel(io.BytesIO(datos))
+    except Exception as exc:  # any parse failure is the uploader's file, not our bug
+        raise op.DatoInvalido("El archivo no es un Excel válido (.xlsx)") from exc
+    filas, errores = procesar(db, df, convocatoria)
+    if errores:
+        raise op.DatoInvalido(errores[0])
+    salida = io.BytesIO()
+    generar_excel_salida(filas, salida)
+    return {
+        "registrados": sum(f.es_valida for f in filas),
+        "errores": [{"fila": f.fila, "curp": f.curp, "nombre": f.nombre, "idioma": f.idioma,
+                     "error": f.error} for f in filas if not f.es_valida],
+        "excel": base64.b64encode(salida.getvalue()).decode(),
+    }
+
+
+# Raw .xlsx body (Content-Type: application/octet-stream) instead of a multipart
+# form, so the API needs no python-multipart.
+@app.post("/api/personal/solicitantes/carga")
+async def cargar_solicitantes(
+    request: Request, db: DB, _: Admin,
+    convocatoria: Annotated[str, Query(pattern=r"^\d{4}[A-Za-z]$")],
+) -> Carga:
+    datos = await request.body()
+    if len(datos) > MAX_EXCEL:
+        raise HTTPException(413, "El archivo excede 5 MB")
+    return await run_in_threadpool(_cargar_excel, db, datos, convocatoria.upper())
