@@ -63,27 +63,28 @@ def get_db() -> Database:
 # collection if the Centro needs to kick someone out mid-exam.
 # ---------------------------------------------------------------------------
 
-def _firma(datos: bytes) -> str:
+def _firma(datos: bytes, prefijo: bytes = b"sesion|") -> str:
     pepper = os.environ.get("CLAVE_PEPPER")
     if not pepper:
         raise RuntimeError("Falta la variable de entorno CLAVE_PEPPER")
-    # "sesion|" prefix keeps these signatures distinct from access-code hashes.
-    return hmac.new(pepper.encode(), b"sesion|" + datos, hashlib.sha256).hexdigest()
+    # The prefix keeps applicant ("sesion|") and staff ("personal|") tokens, and
+    # access-code hashes, from ever being interchangeable.
+    return hmac.new(pepper.encode(), prefijo + datos, hashlib.sha256).hexdigest()
 
 
-def crear_token(asignacion_id: str, ahora: float | None = None) -> str:
+def crear_token(sujeto: str, ahora: float | None = None, *, campo: str = "a", prefijo: bytes = b"sesion|") -> str:
     exp = int((ahora or time.time()) + SESION_HORAS * 3600)
-    datos = base64.urlsafe_b64encode(json.dumps({"a": asignacion_id, "exp": exp}).encode())
-    return f"{datos.decode()}.{_firma(datos)}"
+    datos = base64.urlsafe_b64encode(json.dumps({campo: sujeto, "exp": exp}).encode())
+    return f"{datos.decode()}.{_firma(datos, prefijo)}"
 
 
-def leer_token(token: str, ahora: float | None = None) -> str | None:
+def leer_token(token: str, ahora: float | None = None, *, campo: str = "a", prefijo: bytes = b"sesion|") -> str | None:
     datos, _, firma = token.partition(".")
-    if not hmac.compare_digest(firma, _firma(datos.encode())):
+    if not hmac.compare_digest(firma, _firma(datos.encode(), prefijo)):
         return None
     try:
         payload = json.loads(base64.urlsafe_b64decode(datos))
-        return payload["a"] if payload["exp"] > (ahora or time.time()) else None
+        return payload[campo] if payload["exp"] > (ahora or time.time()) else None
     except (ValueError, KeyError, TypeError):
         return None
 
@@ -99,6 +100,25 @@ def asignacion_actual(
 
 DB = Annotated[Database, Depends(get_db)]
 Asignacion = Annotated[str, Depends(asignacion_actual)]
+
+_BEARER = Depends(HTTPBearer(auto_error=False))
+
+
+def personal_actual(db: DB, cred: Annotated[HTTPAuthorizationCredentials | None, _BEARER]) -> dict:
+    # Re-read on every request so deactivating a user or changing rol applies at once.
+    uid = leer_token(cred.credentials, campo="u", prefijo=b"personal|") if cred else None
+    usuario = db.usuarios.find_one({"_id": op._id(uid)}) if uid else None
+    if usuario is None or not usuario["activo"]:
+        raise HTTPException(401, "Sesión inválida o expirada; vuelve a iniciar sesión")
+    return usuario
+
+
+def requiere_rol(*roles: str):
+    def dependencia(usuario: Annotated[dict, Depends(personal_actual)]) -> dict:
+        if usuario["rol"] not in roles:
+            raise HTTPException(403, "No tienes permiso para esta sección")
+        return usuario
+    return dependencia
 
 
 def _intento_id(db: Database, asignacion_id: str) -> Any:
@@ -216,6 +236,23 @@ class Login(BaseModel):
     clave: str = Field(max_length=20)
 
 
+class LoginPersonal(BaseModel):
+    correo: str = Field(max_length=200)
+    clave: str = Field(max_length=200)
+
+
+class Usuario(BaseModel):
+    id: str
+    correo: str
+    nombre: str
+    rol: Literal["admin", "profesor"]
+
+
+class SesionPersonal(BaseModel):
+    token: str
+    usuario: Usuario
+
+
 class Respuesta(BaseModel):
     valor: Valor | None = None
 
@@ -240,6 +277,22 @@ def iniciar_sesion(body: Login, db: DB) -> Sesion:
     asignacion = op.autenticar(db, body.curp, body.clave)
     asignacion_id = str(asignacion["_id"])
     return {"token": crear_token(asignacion_id), "perfil": perfil(db, asignacion_id)}
+
+
+def _usuario(u: dict) -> dict:
+    return {"id": str(u["_id"]), "correo": u["correo"], "nombre": u["nombre"], "rol": u["rol"]}
+
+
+@app.post("/api/personal/sesion")
+def iniciar_sesion_personal(body: LoginPersonal, db: DB) -> SesionPersonal:
+    u = op.autenticar_personal(db, body.correo, body.clave)
+    token = crear_token(str(u["_id"]), campo="u", prefijo=b"personal|")
+    return {"token": token, "usuario": _usuario(u)}
+
+
+@app.get("/api/personal/yo")
+def personal_yo(usuario: Annotated[dict, Depends(personal_actual)]) -> Usuario:
+    return _usuario(usuario)
 
 
 @app.get("/api/perfil")

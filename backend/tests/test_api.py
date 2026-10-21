@@ -4,9 +4,11 @@
 """
 
 import pytest
+from fastapi import HTTPException
 from fastapi.testclient import TestClient
 
-from api.main import app, crear_token, get_db, leer_token
+from api.main import app, crear_token, get_db, leer_token, requiere_rol
+from db import operaciones as op
 from tests.test_base_datos import PERFECTAS, _asignacion, cliente, db  # noqa: F401 (fixtures)
 
 CURP = "LOPE020202MGTXXX09"
@@ -80,3 +82,50 @@ def test_flujo_completo(api, sesion):
 
     assert api.post("/api/intento").status_code == 403  # single attempt
     assert api.put("/api/intento/respuestas/q01", json={"valor": 0}).status_code == 409
+
+
+# ---------------------------------------------------------------------------
+# Personal (staff)
+# ---------------------------------------------------------------------------
+
+def _login_personal(api, correo="ana@ugto.mx", clave="clave-larga-123"):
+    return api.post("/api/personal/sesion", json={"correo": correo, "clave": clave})
+
+
+@pytest.fixture
+def personal(api, db):  # noqa: F811
+    op.crear_usuario(db, correo="Ana@UGTO.mx", nombre="Ana", rol="profesor", clave="clave-larga-123")
+    return db.usuarios.find_one({"correo": "ana@ugto.mx"})
+
+
+def test_personal_login_ok(api, personal):
+    r = _login_personal(api)
+    assert r.status_code == 200, r.text
+    assert r.json()["usuario"] == {"id": str(personal["_id"]), "correo": "ana@ugto.mx", "nombre": "Ana", "rol": "profesor"}
+    yo = api.get("/api/personal/yo", headers={"Authorization": f"Bearer {r.json()['token']}"})
+    assert yo.status_code == 200 and "clave_hash" not in yo.json()
+
+
+def test_personal_clave_incorrecta_o_inactivo(api, db, personal):  # noqa: F811
+    assert _login_personal(api, clave="otra-clave-larga").status_code == 401
+    assert _login_personal(api, correo="nadie@ugto.mx").status_code == 401
+    token = _login_personal(api).json()["token"]
+    db.usuarios.update_one({"_id": personal["_id"]}, {"$set": {"activo": False}})
+    assert _login_personal(api).status_code == 401
+    # an already-issued token stops working as soon as the user is deactivated
+    assert api.get("/api/personal/yo", headers={"Authorization": f"Bearer {token}"}).status_code == 401
+
+
+def test_tokens_no_intercambiables(api, sesion, personal):
+    solicitante = sesion["token"]
+    assert api.get("/api/personal/yo", headers={"Authorization": f"Bearer {solicitante}"}).status_code == 401
+    token = _login_personal(api).json()["token"]
+    assert api.get("/api/perfil", headers={"Authorization": f"Bearer {token}"}).status_code == 401
+
+
+def test_requiere_rol():
+    guarda = requiere_rol("admin")
+    assert guarda({"rol": "admin"}) == {"rol": "admin"}
+    with pytest.raises(HTTPException) as e:
+        guarda({"rol": "profesor"})
+    assert e.value.status_code == 403

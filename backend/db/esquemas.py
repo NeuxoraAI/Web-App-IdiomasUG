@@ -283,6 +283,26 @@ CONTADORES = {
 }
 
 
+# ---------------------------------------------------------------------------
+# usuarios — personal del Centro (admin / profesor); clave_hash = scrypt
+# ---------------------------------------------------------------------------
+
+USUARIOS = {
+    "$jsonSchema": {
+        "bsonType": "object",
+        "required": ["correo", "nombre", "rol", "clave_hash", "activo", "creado_en"],
+        "properties": {
+            "correo": {"bsonType": "string"},
+            "nombre": _texto,
+            "rol": {"enum": ["admin", "profesor"]},
+            "clave_hash": {"bsonType": "string"},
+            "activo": {"bsonType": "bool"},
+            "creado_en": _fecha,
+        },
+    }
+}
+
+
 VALIDADORES = {
     "idiomas": IDIOMAS,
     "examenes": EXAMENES,
@@ -290,4 +310,5 @@ VALIDADORES = {
     "asignaciones": ASIGNACIONES,
     "intentos": INTENTOS,
     "contadores": CONTADORES,
+    "usuarios": USUARIOS,
 }

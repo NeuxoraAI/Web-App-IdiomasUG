@@ -51,6 +51,9 @@ INDICES: dict[str, list[IndexModel]] = {
         IndexModel([("estado", ASCENDING), ("expira_en", ASCENDING)], name="vencimiento"),
     ],
     "contadores": [],
+    "usuarios": [
+        IndexModel([("correo", ASCENDING)], unique=True, name="correo_unico"),
+    ],
 }
 
 

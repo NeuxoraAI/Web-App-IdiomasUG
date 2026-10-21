@@ -357,3 +357,14 @@ class TestCalificacion:
         for n, mcer in enumerate(esperados):
             r = calificar(EXAMEN, {pid: PERFECTAS[pid] for pid in ids[:n]})
             assert (r["aciertos"], r["mcer"]) == (n, mcer)
+
+
+def test_clave_de_personal_se_guarda_con_hash(db):
+    op.crear_usuario(db, correo="a@ugto.mx", nombre="A", rol="admin", clave="clave-larga-123")
+    guardado = db.usuarios.find_one({"correo": "a@ugto.mx"})["clave_hash"]
+    assert "clave-larga-123" not in guardado
+    assert op.autenticar_personal(db, "A@ugto.mx", "clave-larga-123")["rol"] == "admin"
+    with pytest.raises(op.YaRegistrado):
+        op.crear_usuario(db, correo="a@ugto.mx", nombre="A", rol="admin", clave="clave-larga-123")
+    with pytest.raises(op.DatoInvalido):
+        op.crear_usuario(db, correo="b@ugto.mx", nombre="B", rol="admin", clave="corta")

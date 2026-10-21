@@ -24,6 +24,7 @@ import hashlib
 import hmac
 import os
 import re
+import secrets
 from datetime import datetime, timedelta, timezone
 from typing import Any
 
@@ -108,6 +109,63 @@ def hash_clave(clave: str) -> str:
             "Debe ser la misma en todos los servidores y no cambiar durante la convocatoria."
         )
     return hmac.new(pepper.encode(), normalizar_clave(clave).encode(), hashlib.sha256).hexdigest()
+
+
+# ---------------------------------------------------------------------------
+# Personal del Centro (admin / profesor)
+# ---------------------------------------------------------------------------
+
+ROLES = ("admin", "profesor")
+_SCRYPT = (2**14, 8, 1)  # n, r, p
+
+
+def _scrypt(clave: str, salt: bytes, n: int, r: int, p: int) -> bytes:
+    return hashlib.scrypt(clave.encode(), salt=salt, n=n, r=r, p=p, dklen=32)
+
+
+def hash_clave_personal(clave: str) -> str:
+    """scrypt con sal aleatoria, en una sola cadena: scrypt$n$r$p$sal$hash."""
+    salt = secrets.token_bytes(16)
+    n, r, p = _SCRYPT
+    return f"scrypt${n}${r}${p}${salt.hex()}${_scrypt(clave, salt, n, r, p).hex()}"
+
+
+def verificar_clave_personal(clave: str, guardado: str) -> bool:
+    try:
+        _, n, r, p, salt, esperado = guardado.split("$")
+        calculado = _scrypt(clave, bytes.fromhex(salt), int(n), int(r), int(p))
+    except ValueError:
+        return False
+    return hmac.compare_digest(calculado, bytes.fromhex(esperado))
+
+
+def crear_usuario(db: Database, *, correo: str, nombre: str, rol: str, clave: str) -> dict:
+    correo = str(correo or "").strip().lower()
+    if rol not in ROLES:
+        raise DatoInvalido(f"Rol inválido: debe ser {' o '.join(ROLES)}")
+    if len(clave or "") < 10:
+        raise DatoInvalido("La contraseña debe tener al menos 10 caracteres")
+    usuario = {
+        "correo": correo, "nombre": str(nombre).strip(), "rol": rol,
+        "clave_hash": hash_clave_personal(clave), "activo": True, "creado_en": ahora_utc(),
+    }
+    try:
+        usuario["_id"] = db.usuarios.insert_one(usuario).inserted_id
+    except DuplicateKeyError as exc:
+        raise YaRegistrado("Ya existe un usuario con ese correo") from exc
+    return usuario
+
+
+_HASH_SENUELO = hash_clave_personal(secrets.token_hex(16))
+
+
+def autenticar_personal(db: Database, correo: str, clave: str) -> dict:
+    usuario = db.usuarios.find_one({"correo": str(correo or "").strip().lower()})
+    # Se verifica contra un hash señuelo si el usuario no existe: mismo costo, no se revela por tiempo.
+    guardado = usuario["clave_hash"] if usuario else _HASH_SENUELO
+    if not verificar_clave_personal(clave or "", guardado) or usuario is None or not usuario["activo"]:
+        raise AccesoDenegado("Correo o contraseña incorrectos")
+    return usuario
 
 
 def siguiente_folio(db: Database, convocatoria: str, prefijo: str = "EXAUBI") -> str:

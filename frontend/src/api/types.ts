@@ -18,3 +18,6 @@ export type RespuestaRequest = S['Respuesta'];
 export type IncidenciaRequest = S['Incidencia'];
 export type PosicionRequest = S['Posicion'];
 export type Resultado = S['Resultado'];
+export type UsuarioPersonal = S['Usuario'];
+export type SesionPersonalRequest = S['LoginPersonal'];
+export type SesionPersonalResponse = S['SesionPersonal'];

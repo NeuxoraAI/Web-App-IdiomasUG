@@ -4,13 +4,14 @@
 import { API_URL } from '../services/config';
 
 const KEY = 'exaubi-token';
+export const KEY_PERSONAL = 'exaubi-personal'; // staff panel session, separate from the applicant's
 
 function storage<T>(fn: (s: Storage) => T): T | null {
   try { return fn(sessionStorage); } catch { return null; }
 }
 
-export const getToken = () => storage((s) => s.getItem(KEY));
-export const setToken = (t: string | null) => storage((s) => (t ? s.setItem(KEY, t) : s.removeItem(KEY)));
+export const getToken = (key = KEY) => storage((s) => s.getItem(key));
+export const setToken = (t: string | null, key = KEY) => storage((s) => (t ? s.setItem(key, t) : s.removeItem(key)));
 
 export class ApiError extends Error {
   status: number;
@@ -20,8 +21,8 @@ export class ApiError extends Error {
   }
 }
 
-export async function api<T = null>(method: string, path: string, body?: unknown): Promise<T> {
-  const token = getToken();
+export async function api<T = null>(method: string, path: string, body?: unknown, tokenKey = KEY): Promise<T> {
+  const token = getToken(tokenKey);
   let res: Response;
   try {
     res = await fetch(API_URL + path, {

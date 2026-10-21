@@ -38,6 +38,40 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/personal/sesion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Iniciar Sesion Personal */
+        post: operations["iniciar_sesion_personal_api_personal_sesion_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/personal/yo": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Personal Yo */
+        get: operations["personal_yo_api_personal_yo_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/perfil": {
         parameters: {
             query?: never;
@@ -197,6 +231,13 @@ export interface components {
             /** Clave */
             clave: string;
         };
+        /** LoginPersonal */
+        LoginPersonal: {
+            /** Correo */
+            correo: string;
+            /** Clave */
+            clave: string;
+        };
         /** Media */
         Media: {
             /**
@@ -316,6 +357,26 @@ export interface components {
             token: string;
             perfil: components["schemas"]["Perfil"];
         };
+        /** SesionPersonal */
+        SesionPersonal: {
+            /** Token */
+            token: string;
+            usuario: components["schemas"]["Usuario"];
+        };
+        /** Usuario */
+        Usuario: {
+            /** Id */
+            id: string;
+            /** Correo */
+            correo: string;
+            /** Nombre */
+            nombre: string;
+            /**
+             * Rol
+             * @enum {string}
+             */
+            rol: "admin" | "profesor";
+        };
         /** ValidationError */
         ValidationError: {
             /** Location */
@@ -389,6 +450,59 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    iniciar_sesion_personal_api_personal_sesion_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LoginPersonal"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["SesionPersonal"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    personal_yo_api_personal_yo_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Usuario"];
                 };
             };
         };
