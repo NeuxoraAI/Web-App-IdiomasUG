@@ -306,6 +306,10 @@ class ErrorCarga(BaseModel):
     error: str
 
 
+class NuevaClave(BaseModel):
+    clave: str = Field(description="Shown once; the previous key stops working")
+
+
 class Carga(BaseModel):
     registrados: int
     errores: list[ErrorCarga]
@@ -421,6 +425,14 @@ def examenes_presentados(db: DB, _: Personal) -> list[ExamenPresentado]:
 @app.get("/api/personal/solicitantes")
 def solicitantes(db: DB, _: Admin) -> list[Solicitante]:
     return op.listar_solicitantes(db)
+
+
+@app.post("/api/personal/solicitantes/{folio}/clave")
+def regenerar_clave(folio: str, db: DB, _: Admin) -> NuevaClave:
+    a = db.asignaciones.find_one({"folio": folio}, {"_id": 1})
+    if a is None:
+        raise HTTPException(404, "No existe ese folio")
+    return {"clave": op.regenerar_clave(db, a["_id"])}
 
 
 def _cargar_excel(db: Database, datos: bytes, convocatoria: str) -> dict:

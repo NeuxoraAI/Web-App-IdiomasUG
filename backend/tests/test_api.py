@@ -231,3 +231,24 @@ def test_carga_correo_invalido_es_error_de_fila(api, admin, tmp_path):
     assert r.status_code == 200, r.text
     assert r.json()["registrados"] == 0
     assert r.json()["errores"][0]["error"] == "Correo inválido"
+
+
+def test_regenerar_clave_solicitante(api, admin, profesor):
+    salida = pd.read_excel(io.BytesIO(base64.b64decode(_cargar(api, admin).json()["excel"])), dtype=str)
+    fila = salida[salida["Folio"].notna()].iloc[0]
+    ruta = f"/api/personal/solicitantes/{fila['Folio']}/clave"
+    assert api.post(ruta, headers=profesor).status_code == 403
+    r = api.post(ruta, headers=admin)
+    assert r.status_code == 200, r.text
+    nueva = r.json()["clave"]
+    # the new key works and the old one no longer does
+    assert api.post("/api/sesion", json={"curp": fila["CURP"], "clave": nueva}).status_code == 200
+    assert api.post("/api/sesion", json={"curp": fila["CURP"], "clave": fila["Clave"]}).status_code == 401
+    assert api.post("/api/personal/solicitantes/NO-EXISTE/clave", headers=admin).status_code == 404
+
+
+def test_regenerar_clave_examen_iniciado(api, db, admin, sesion):  # noqa: F811
+    api.post("/api/intento")
+    folio = sesion["perfil"]["folio"]
+    r = api.post(f"/api/personal/solicitantes/{folio}/clave", headers=admin)
+    assert r.status_code == 400 and "no iniciado" in r.json()["detail"]
