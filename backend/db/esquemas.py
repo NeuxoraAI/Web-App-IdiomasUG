@@ -36,6 +36,7 @@ ESTADOS_INTENTO = ["en_curso", "enviado", "tiempo_agotado"]
 # Misma estructura que valida scripts/cargar_solicitantes.py (versión compacta).
 PATRON_CURP = r"^[A-Z][AEIOUX][A-Z]{2}\d{6}[HM][A-Z]{2}[B-DF-HJ-NP-TV-Z]{3}[A-Z\d]\d$"
 PATRON_PREGUNTA_ID = r"^q\d{2,3}$"
+PATRON_CORREO = r"^[^@\s]+@[^@\s]+\.[^@\s]+$"
 PATRON_CONVOCATORIA = r"^\d{4}[A-Z]$"          # 2026B
 PATRON_HASH = r"^[0-9a-f]{64}$"                # HMAC-SHA256 en hexadecimal
 
@@ -172,7 +173,7 @@ SUSTENTANTES = {
         "properties": {
             "curp": {"bsonType": "string", "pattern": PATRON_CURP},
             "nombre": _texto,
-            "correo": {"bsonType": "string", "pattern": r"^[^@\s]+@[^@\s]+\.[^@\s]+$"},
+            "correo": {"bsonType": "string", "pattern": PATRON_CORREO},
             "creado_en": _fecha,
             "actualizado_en": _fecha,
         },

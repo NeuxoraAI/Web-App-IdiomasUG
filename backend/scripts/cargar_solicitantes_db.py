@@ -20,6 +20,7 @@ Columnas requeridas: CURP, Nombre, Idioma. Opcional: Correo.
 
 import argparse
 import os
+import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
@@ -31,6 +32,7 @@ RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
 
 from db.conexion import obtener_db, verificar_conexion  # noqa: E402
+from db.esquemas import PATRON_CORREO  # noqa: E402
 from db.operaciones import YaRegistrado, idiomas_activos, registrar_asignacion  # noqa: E402
 from scripts.cargar_solicitantes import validate_curp  # noqa: E402
 
@@ -95,6 +97,9 @@ def procesar(db, df: pd.DataFrame, convocatoria: str, prefijo: str = "EXAUBI"
             f.curp = validate_curp(f.curp)
         except ValueError:
             f.error = "CURP inválida"
+            continue
+        if f.correo and not re.match(PATRON_CORREO, f.correo):
+            f.error = "Correo inválido"  # the sustentantes validator would reject it mid-upload
             continue
         if f.idioma not in catalogo:
             f.error = f"Idioma no válido: '{f.idioma}'"

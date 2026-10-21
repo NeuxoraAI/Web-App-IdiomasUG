@@ -220,3 +220,14 @@ def test_examenes_con_calificaciones(api, sesion, profesor, admin):
         assert fila["curp"] == CURP and fila["idioma"] == "Inglés" and fila["estado"] == "finalizado"
         assert fila["aciertos"] == resultado["aciertos"] and fila["mcer"] == resultado["mcer"]
     assert api.get("/api/personal/examenes").status_code == 401
+
+
+def test_carga_correo_invalido_es_error_de_fila(api, admin, tmp_path):
+    archivo = tmp_path / "c.xlsx"
+    pd.DataFrame([
+        {"CURP": "RAHE030910HQTMRMA3", "Nombre": "Emiliano", "Idioma": "Inglés", "Correo": "malo"},
+    ]).to_excel(archivo, index=False)
+    r = _cargar(api, admin, archivo=archivo)
+    assert r.status_code == 200, r.text
+    assert r.json()["registrados"] == 0
+    assert r.json()["errores"][0]["error"] == "Correo inválido"
