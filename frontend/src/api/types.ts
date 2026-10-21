@@ -7,7 +7,6 @@ type S = components['schemas'];
 
 export type Perfil = S['Perfil'];
 export type EstadoAsignacion = Perfil['estado'];
-export type ExamenResumen = S['ExamenResumen'];
 export type SesionRequest = S['Login'];
 export type SesionResponse = S['Sesion'];
 export type PreguntaApi = S['Pregunta'];

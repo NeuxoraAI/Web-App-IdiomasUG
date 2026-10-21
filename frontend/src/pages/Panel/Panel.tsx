@@ -4,18 +4,18 @@ import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import './panel.css';
 import { api, KEY_PERSONAL, setToken } from '../../api/client';
 import type { SesionPersonalRequest, SesionPersonalResponse, UsuarioPersonal } from '../../api/types';
-import { apiPersonal, SESION_EXPIRADA } from './apiPersonal';
-import { Examenes } from './Examenes';
-import { Solicitantes } from './Solicitantes';
+import { apiStaff, SESSION_EXPIRED } from './apiStaff';
+import { Applicants } from './Applicants';
+import { Exams } from './Exams';
 
 const TABS: Record<UsuarioPersonal['rol'], [string, () => ReactNode][]> = {
-  admin: [['Exámenes', Examenes], ['Solicitantes', Solicitantes]],
-  profesor: [['Exámenes', Examenes]],
+  admin: [['Exámenes', Exams], ['Solicitantes', Applicants]],
+  profesor: [['Exámenes', Exams]],
 };
 
-const salir = () => setToken(null, KEY_PERSONAL);
+const logout = () => setToken(null, KEY_PERSONAL);
 
-function LoginPersonal({ onLogin }: { onLogin: (u: UsuarioPersonal) => void }) {
+function StaffLogin({ onLogin }: { onLogin: (u: UsuarioPersonal) => void }) {
   const [correo, setCorreo] = useState('');
   const [clave, setClave] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -57,40 +57,41 @@ function LoginPersonal({ onLogin }: { onLogin: (u: UsuarioPersonal) => void }) {
 }
 
 export function Panel() {
-  const [usuario, setUsuario] = useState<UsuarioPersonal | null>(null);
-  const [cargando, setCargando] = useState(true);
+  const [user, setUser] = useState<UsuarioPersonal | null>(null);
+  const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState(0);
 
   useEffect(() => {
-    const cerrar = () => { salir(); setUsuario(null); setTab(0); };
-    window.addEventListener(SESION_EXPIRADA, cerrar);
-    apiPersonal<UsuarioPersonal>('GET', '/personal/yo')
-      .then(setUsuario)
+    const close = () => { logout(); setUser(null); setTab(0); };
+    window.addEventListener(SESSION_EXPIRED, close);
+    apiStaff<UsuarioPersonal>('GET', '/personal/yo')
+      .then(setUser)
       .catch(() => {})
-      .finally(() => setCargando(false));
-    return () => window.removeEventListener(SESION_EXPIRADA, cerrar);
+      .finally(() => setLoading(false));
+    return () => window.removeEventListener(SESSION_EXPIRED, close);
   }, []);
 
-  if (cargando) return null;
-  if (!usuario) return <LoginPersonal onLogin={setUsuario} />;
+  if (loading) return null;
+  if (!user) return <StaffLogin onLogin={setUser} />;
 
-  const tabs = TABS[usuario.rol];
+  const tabs = TABS[user.rol];
+  const Tab = tabs[tab][1];
   return (
     <div className="panel">
       <header className="panel-header">
-        <span className="panel-user"><strong>{usuario.nombre}</strong> · {usuario.rol}</span>
-        <button type="button" className="btn-outline" onClick={() => { salir(); setUsuario(null); setTab(0); }}>
+        <span className="panel-user"><strong>{user.nombre}</strong> · {user.rol}</span>
+        <button type="button" className="btn-outline" onClick={() => { logout(); setUser(null); setTab(0); }}>
           Cerrar sesión
         </button>
       </header>
       <div className="panel-tabs" role="tablist" aria-label="Secciones del panel">
         {tabs.map(([t], i) => (
           <button key={t} type="button" role="tab" id={`tab-${i}`} aria-selected={i === tab}
-            aria-controls="panel-cuerpo" className="panel-tab" onClick={() => setTab(i)}>{t}</button>
+            aria-controls="panel-content" className="panel-tab" onClick={() => setTab(i)}>{t}</button>
         ))}
       </div>
-      <section id="panel-cuerpo" role="tabpanel" aria-labelledby={`tab-${tab}`} className="panel-body">
-        {tabs.map(([t, Tab], i) => i === tab && <Tab key={t} />)}
+      <section id="panel-content" role="tabpanel" aria-labelledby={`tab-${tab}`} className="panel-body">
+        <Tab key={tab} />
       </section>
     </div>
   );

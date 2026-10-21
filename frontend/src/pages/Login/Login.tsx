@@ -79,7 +79,7 @@ export function Login() {
         <div className="login-panel">
           <form className="card card--accent login-form" onSubmit={submit}>
             <div className="login-form-head">
-              <div className="eyebrow">EXAUBI 2026B · Inglés</div>
+              <div className="eyebrow">EXAUBI · Examen de ubicación</div>
               <h2 className="card-title"><Flip texts={T.title} {...flip} /></h2>
               <p className="login-form-hint">Ingresa el código de un solo uso que recibiste en tu correo institucional.</p>
             </div>

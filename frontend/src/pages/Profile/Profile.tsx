@@ -6,9 +6,9 @@ import { AppShell } from '../../components/layout/AppShell';
 import { TypedText } from '../../components/ui/TypedText';
 import { usePerfil, useSession } from '../../context/SessionContext';
 import { TYPED } from '../../data/copy';
-import { initials } from '../../utils/format';
+import { ESTADOS, initials } from '../../utils/format';
 
-const STATUS: Record<string, string> = { pendiente: 'Disponible', en_curso: 'En curso', finalizado: 'Finalizado', cancelado: 'Cancelado' };
+const STATUS = { ...ESTADOS, pendiente: 'Disponible' };
 
 export function Profile() {
   const { profileNotice, showIntro } = useSession();
@@ -42,7 +42,7 @@ export function Profile() {
                 <div className="eyebrow">Examen asignado</div>
                 <h2 className="card-title">{ex ? ex.titulo : `EXAUBI · ${p.idioma}`}</h2>
               </div>
-              <span className="profile-exam-status">{ex ? STATUS[p.estado] || p.estado : 'No disponible'}</span>
+              <span className="profile-exam-status">{ex ? STATUS[p.estado] : 'No disponible'}</span>
             </div>
             <div className="profile-stats">
               <div className="profile-stat"><span className="profile-stat-label">Duración</span><span className="profile-stat-value">{ex ? ex.duracion_min : '—'} min</span></div>

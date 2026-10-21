@@ -1,7 +1,8 @@
 // Backend API client. The session token lives in sessionStorage so a page
 // reload keeps the exam going (the timer runs on the server).
 
-import { API_URL } from '../services/config';
+// Same-origin API: Caddy proxies /api in production, the Vite dev server in development.
+const API_URL = '/api';
 
 const KEY = 'exaubi-token';
 export const KEY_PERSONAL = 'exaubi-personal'; // staff panel session, separate from the applicant's
