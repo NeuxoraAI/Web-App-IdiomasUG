@@ -200,7 +200,6 @@
 .login-form .btn-primary:disabled { background: var(--on-dark-subtle); color: var(--on-dark-muted); box-shadow: none; }
 .login-curp-input { font-size: var(--fs-base); letter-spacing: .08em; padding: var(--space-3) 14px; }
 .login-form-note { margin: 0; font-size: var(--fs-sm); color: var(--on-dark-muted); text-align: center; }
-.login-form-error { margin: 0; padding: 10px var(--space-3); border-radius: var(--radius-md); font-size: var(--fs-sm); color: var(--red); background: var(--red-bg); border-left: 3px solid var(--red); animation: shake .4s ease both; }
 
 /* ---- How it works (gold band) ---- */
 .login-steps {

@@ -1,7 +1,7 @@
 // Exámenes tab (admin and profesor): every started or finished exam with its grade.
 
 import { useEffect, useState } from 'react';
-import { api, KEY_PERSONAL } from '../../api/client';
+import { apiPersonal } from './apiPersonal';
 import type { ExamenPresentado } from '../../api/types';
 import { ESTADOS, fecha, Filtros, useFiltro } from './Filtros';
 
@@ -11,7 +11,7 @@ export function Examenes() {
   const filtro = useFiltro(filas);
 
   useEffect(() => {
-    api<ExamenPresentado[]>('GET', '/personal/examenes', undefined, KEY_PERSONAL)
+    apiPersonal<ExamenPresentado[]>('GET', '/personal/examenes')
       .then(setFilas)
       .catch((err) => setError((err as Error).message));
   }, []);
@@ -19,7 +19,7 @@ export function Examenes() {
   return (
     <div className="panel-lista">
       <Filtros {...filtro} total={filas.length} visibles={filtro.visibles.length} />
-      {error && <p className="login-form-error" role="alert">{error}</p>}
+      {error && <p className="form-error" role="alert">{error}</p>}
       <div className="panel-tabla">
         <table>
           <thead>

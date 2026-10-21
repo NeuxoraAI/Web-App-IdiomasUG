@@ -100,7 +100,7 @@ export function Login() {
                 autoComplete="one-time-code" required value={code} onChange={(e) => setCode(e.target.value)}
               />
             </label>
-            {error && <p className="login-form-error" role="alert">{error}</p>}
+            {error && <p className="form-error" role="alert">{error}</p>}
             <button type="submit" className="btn-primary" disabled={busy}><Flip texts={T.button} {...flip} /></button>
             <p className="login-form-note">El código es válido para un solo intento y expira al concluir el examen.</p>
           </form>

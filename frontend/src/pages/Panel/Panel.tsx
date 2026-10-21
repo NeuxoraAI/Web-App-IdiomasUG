@@ -2,8 +2,9 @@
 
 import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import './panel.css';
-import { api, ApiError, KEY_PERSONAL, setToken } from '../../api/client';
+import { api, KEY_PERSONAL, setToken } from '../../api/client';
 import type { SesionPersonalRequest, SesionPersonalResponse, UsuarioPersonal } from '../../api/types';
+import { apiPersonal, SESION_EXPIRADA } from './apiPersonal';
 import { Examenes } from './Examenes';
 import { Solicitantes } from './Solicitantes';
 
@@ -12,7 +13,7 @@ const TABS: Record<UsuarioPersonal['rol'], [string, () => ReactNode][]> = {
   profesor: [['Exámenes', Examenes]],
 };
 
-const salir = (tokenKey = KEY_PERSONAL) => setToken(null, tokenKey);
+const salir = () => setToken(null, KEY_PERSONAL);
 
 function LoginPersonal({ onLogin }: { onLogin: (u: UsuarioPersonal) => void }) {
   const [correo, setCorreo] = useState('');
@@ -48,7 +49,7 @@ function LoginPersonal({ onLogin }: { onLogin: (u: UsuarioPersonal) => void }) {
           <input type="password" className="panel-input" value={clave} required autoComplete="current-password"
             onChange={(e) => setClave(e.target.value)} />
         </label>
-        {error && <p className="login-form-error" role="alert">{error}</p>}
+        {error && <p className="form-error" role="alert">{error}</p>}
         <button type="submit" className="btn-primary" disabled={busy}>Iniciar sesión</button>
       </form>
     </main>
@@ -61,10 +62,13 @@ export function Panel() {
   const [tab, setTab] = useState(0);
 
   useEffect(() => {
-    api<UsuarioPersonal>('GET', '/personal/yo', undefined, KEY_PERSONAL)
+    const cerrar = () => { salir(); setUsuario(null); setTab(0); };
+    window.addEventListener(SESION_EXPIRADA, cerrar);
+    apiPersonal<UsuarioPersonal>('GET', '/personal/yo')
       .then(setUsuario)
-      .catch((err) => { if (err instanceof ApiError && err.status === 401) salir(); })
+      .catch(() => {})
       .finally(() => setCargando(false));
+    return () => window.removeEventListener(SESION_EXPIRADA, cerrar);
   }, []);
 
   if (cargando) return null;

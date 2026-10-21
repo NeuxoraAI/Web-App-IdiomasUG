@@ -2,7 +2,7 @@
 // access keys, and list everyone registered.
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
-import { api, KEY_PERSONAL } from '../../api/client';
+import { apiPersonal } from './apiPersonal';
 import type { Carga, NuevaClave, Solicitante } from '../../api/types';
 import { ESTADOS, fecha, Filtros, useFiltro } from './Filtros';
 
@@ -30,8 +30,8 @@ function CargaExcel({ onCargado }: { onCargado: () => void }) {
     setCarga(null);
     try {
       const conv = convocatoria.trim().toUpperCase();
-      const r = await api<Carga>('POST', `/personal/solicitantes/carga?convocatoria=${encodeURIComponent(conv)}`,
-        archivo, KEY_PERSONAL);
+      const r = await apiPersonal<Carga>('POST', `/personal/solicitantes/carga?convocatoria=${encodeURIComponent(conv)}`,
+        archivo);
       const nombre = `codigos_acceso_${conv}.xlsx`;
       setCarga({ ...r, nombre });
       descargar(r.excel, nombre);
@@ -59,7 +59,7 @@ function CargaExcel({ onCargado }: { onCargado: () => void }) {
         </label>
         <button type="submit" className="btn-primary" disabled={busy}>{busy ? 'Cargando…' : 'Cargar y generar claves'}</button>
       </div>
-      {error && <p className="login-form-error" role="alert">{error}</p>}
+      {error && <p className="form-error" role="alert">{error}</p>}
       {carga && (
         <div role="status">
           <p><strong>{carga.registrados}</strong> registrados · <strong>{carga.errores.length}</strong> con error.</p>
@@ -90,8 +90,7 @@ export function Solicitantes() {
   async function regenerar(f: Solicitante) {
     if (!confirm(`¿Generar una clave nueva para ${f.nombre} (${f.folio})? La clave anterior dejará de funcionar.`)) return;
     try {
-      const r = await api<NuevaClave>('POST', `/personal/solicitantes/${encodeURIComponent(f.folio)}/clave`,
-        undefined, KEY_PERSONAL);
+      const r = await apiPersonal<NuevaClave>('POST', `/personal/solicitantes/${encodeURIComponent(f.folio)}/clave`);
       setClaves((c) => ({ ...c, [f.folio]: r.clave }));
     } catch (err) {
       setError((err as Error).message);
@@ -99,7 +98,7 @@ export function Solicitantes() {
   }
 
   const cargar = useCallback(() => {
-    api<Solicitante[]>('GET', '/personal/solicitantes', undefined, KEY_PERSONAL)
+    apiPersonal<Solicitante[]>('GET', '/personal/solicitantes')
       .then(setFilas)
       .catch((err) => setError((err as Error).message));
   }, []);
@@ -110,7 +109,7 @@ export function Solicitantes() {
       <CargaExcel onCargado={cargar} />
       <div className="panel-lista">
       <Filtros {...filtro} total={filas.length} visibles={filtro.visibles.length} />
-      {error && <p className="login-form-error" role="alert">{error}</p>}
+      {error && <p className="form-error" role="alert">{error}</p>}
       <div className="panel-tabla">
         <table>
           <thead>
