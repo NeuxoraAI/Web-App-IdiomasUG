@@ -14,7 +14,7 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from pymongo.errors import DuplicateKeyError, ServerSelectionTimeoutError, WriteError
+from pymongo.errors import AutoReconnect, DuplicateKeyError, ServerSelectionTimeoutError, WriteError
 
 RAIZ = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(RAIZ))
@@ -57,11 +57,19 @@ def cliente():
 def db(cliente):
     # Base fija para que el usuario de la app solo necesite permisos sobre ella.
     nombre = "idiomas_ug_test"
-    cliente.drop_database(nombre)  # por si una corrida anterior se interrumpió
     base = cliente[nombre]
-    sembrar(base, verbose=False)
-    base.idiomas.update_one({"_id": "en"}, {"$set": {"activo": True}})
-    op.publicar_examen(base, EXAMEN_ID)
+    # The server occasionally drops a connection mid-setup and DDL commands
+    # (create_collection, collMod) are not retryable, so the whole setup retries.
+    for intento in range(3):
+        try:
+            cliente.drop_database(nombre)  # por si una corrida anterior se interrumpió
+            sembrar(base, verbose=False)
+            base.idiomas.update_one({"_id": "en"}, {"$set": {"activo": True}})
+            op.publicar_examen(base, EXAMEN_ID)
+            break
+        except AutoReconnect:
+            if intento == 2:
+                raise
     yield base
     cliente.drop_database(nombre)
 
