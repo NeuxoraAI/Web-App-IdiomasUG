@@ -25,13 +25,28 @@
 .panel-tab[aria-selected='true'] { color: var(--navy); border-bottom-color: var(--gold); font-weight: 600; }
 .panel-body { display: grid; gap: var(--space-3); padding: var(--space-3); }
 
-.panel-filtros { display: flex; flex-wrap: wrap; align-items: end; gap: var(--space-2); }
-.panel-filtros > .panel-input[type='search'] { flex: 1 1 260px; }
-.panel-conteo { font-size: var(--fs-sm); color: var(--text-muted); margin-left: auto; }
+/* Toolbar: search takes the free space, selects and counter size to content. */
+.panel-filtros { display: grid; grid-template-columns: minmax(200px, 1fr) repeat(3, auto); align-items: center; gap: var(--space-2); }
+.panel-conteo { font-size: var(--fs-sm); color: var(--text-muted); }
 
+.panel-lista { display: grid; gap: var(--space-3); min-width: 0; }
+
+/* Solicitantes: upload card beside the table on wide screens, stacked below. */
+.panel-solicitantes { display: grid; grid-template-columns: minmax(280px, 340px) minmax(0, 1fr); gap: var(--space-3); align-items: start; }
 .panel-carga { display: grid; gap: var(--space-2); }
+.panel-campos { display: grid; gap: var(--space-2); }
 .panel-ayuda { font-size: var(--fs-sm); color: var(--text-muted); margin: 0; }
 .panel-errores { margin: 8px 0 0; padding-left: 20px; font-size: var(--fs-sm); color: var(--red); }
+.panel-clave { font-family: monospace; font-size: var(--fs-base); font-weight: 600; color: var(--navy); user-select: all; }
+.panel-btn-sm { padding: 4px 10px; font-size: var(--fs-xs); }
+
+@media (max-width: 1000px) {
+  .panel-solicitantes { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .panel-filtros { grid-template-columns: 1fr 1fr; }
+  .panel-filtros > [type='search'] { grid-column: 1 / -1; }
+}
 
 .panel-tabla { overflow-x: auto; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-input); }
 .panel-tabla table { width: 100%; border-collapse: collapse; font-size: var(--fs-sm); }

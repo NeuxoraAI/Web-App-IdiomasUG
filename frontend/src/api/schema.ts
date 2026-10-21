@@ -209,6 +209,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/personal/solicitantes/{folio}/clave": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Regenerar Clave */
+        post: operations["regenerar_clave_api_personal_solicitantes__folio__clave_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/personal/solicitantes/carga": {
         parameters: {
             query?: never;
@@ -353,6 +370,14 @@ export interface components {
             tipo: "audio" | "imagen";
             /** Url */
             url?: string | null;
+        };
+        /** NuevaClave */
+        NuevaClave: {
+            /**
+             * Clave
+             * @description Shown once; the previous key stops working
+             */
+            clave: string;
         };
         /** Palabras */
         Palabras: {
@@ -849,6 +874,37 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Solicitante"][];
+                };
+            };
+        };
+    };
+    regenerar_clave_api_personal_solicitantes__folio__clave_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                folio: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NuevaClave"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

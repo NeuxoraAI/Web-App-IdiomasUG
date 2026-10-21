@@ -17,7 +17,7 @@ export function Examenes() {
   }, []);
 
   return (
-    <>
+    <div className="panel-lista">
       <Filtros {...filtro} total={filas.length} visibles={filtro.visibles.length} />
       {error && <p className="login-form-error" role="alert">{error}</p>}
       <div className="panel-tabla">
@@ -42,6 +42,6 @@ export function Examenes() {
         </table>
         {filtro.visibles.length === 0 && <p className="panel-vacio">Sin exámenes que mostrar.</p>}
       </div>
-    </>
+    </div>
   );
 }

@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect, useState, type FormEvent } from 'react';
 import { api, KEY_PERSONAL } from '../../api/client';
-import type { Carga, Solicitante } from '../../api/types';
+import type { Carga, NuevaClave, Solicitante } from '../../api/types';
 import { ESTADOS, fecha, Filtros, useFiltro } from './Filtros';
 
 const XLSX = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
@@ -48,7 +48,7 @@ function CargaExcel({ onCargado }: { onCargado: () => void }) {
       <h2 className="card-title">Cargar solicitantes</h2>
       <p className="panel-ayuda">Excel (.xlsx) con columnas CURP, Nombre e Idioma (Correo opcional).
         Se genera un Excel con el folio y la clave de acceso de cada solicitante.</p>
-      <div className="panel-filtros">
+      <div className="panel-campos">
         <label className="panel-label">Convocatoria
           <input className="panel-input" value={convocatoria} required pattern="\d{4}[A-Za-z]" placeholder="2026B"
             onChange={(e) => setConvocatoria(e.target.value)} />
@@ -83,7 +83,20 @@ function CargaExcel({ onCargado }: { onCargado: () => void }) {
 export function Solicitantes() {
   const [filas, setFilas] = useState<Solicitante[]>([]);
   const [error, setError] = useState<string | null>(null);
+  // Regenerated keys, shown once per session of this tab; the DB only keeps their hash.
+  const [claves, setClaves] = useState<Record<string, string>>({});
   const filtro = useFiltro(filas);
+
+  async function regenerar(f: Solicitante) {
+    if (!confirm(`¿Generar una clave nueva para ${f.nombre} (${f.folio})? La clave anterior dejará de funcionar.`)) return;
+    try {
+      const r = await api<NuevaClave>('POST', `/personal/solicitantes/${encodeURIComponent(f.folio)}/clave`,
+        undefined, KEY_PERSONAL);
+      setClaves((c) => ({ ...c, [f.folio]: r.clave }));
+    } catch (err) {
+      setError((err as Error).message);
+    }
+  }
 
   const cargar = useCallback(() => {
     api<Solicitante[]>('GET', '/personal/solicitantes', undefined, KEY_PERSONAL)
@@ -93,8 +106,9 @@ export function Solicitantes() {
   useEffect(cargar, [cargar]);
 
   return (
-    <>
+    <div className="panel-solicitantes">
       <CargaExcel onCargado={cargar} />
+      <div className="panel-lista">
       <Filtros {...filtro} total={filas.length} visibles={filtro.visibles.length} />
       {error && <p className="login-form-error" role="alert">{error}</p>}
       <div className="panel-tabla">
@@ -102,7 +116,7 @@ export function Solicitantes() {
           <thead>
             <tr>
               <th>Folio</th><th>Nombre</th><th>CURP</th><th>Correo</th><th>Idioma</th>
-              <th>Convocatoria</th><th>Estado</th><th>Registrado</th>
+              <th>Convocatoria</th><th>Estado</th><th>Registrado</th><th>Clave de acceso</th>
             </tr>
           </thead>
           <tbody>
@@ -110,12 +124,19 @@ export function Solicitantes() {
               <tr key={f.folio}>
                 <td>{f.folio}</td><td>{f.nombre}</td><td>{f.curp}</td><td>{f.correo ?? '—'}</td>
                 <td>{f.idioma}</td><td>{f.convocatoria}</td><td>{ESTADOS[f.estado]}</td><td>{fecha(f.creada_en)}</td>
+                <td>
+                  {claves[f.folio] ? <code className="panel-clave">{claves[f.folio]}</code>
+                    : f.estado === 'pendiente'
+                      ? <button type="button" className="btn-outline panel-btn-sm" onClick={() => regenerar(f)}>Regenerar clave</button>
+                      : '—'}
+                </td>
               </tr>
             ))}
           </tbody>
         </table>
         {filtro.visibles.length === 0 && <p className="panel-vacio">Sin solicitantes que mostrar.</p>}
       </div>
-    </>
+      </div>
+    </div>
   );
 }

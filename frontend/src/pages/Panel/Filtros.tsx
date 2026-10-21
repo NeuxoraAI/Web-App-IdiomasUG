@@ -1,26 +1,27 @@
-// Search box + language filter shared by the panel tables. Filtering is
+// Search box + language and estado filters shared by the panel tables. Filtering is
 // client-side over the full list.
 // ponytail: client-side filter; move it to the API if a convocatoria grows past a few thousand rows.
 
 import { useMemo, useState } from 'react';
 
-type Fila = { nombre: string; curp: string; folio: string; idioma: string };
+type Fila = { nombre: string; curp: string; folio: string; idioma: string; estado: string };
 
 const normalizar = (s: string) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase();
 
 export function useFiltro<T extends Fila>(filas: T[]) {
   const [q, setQ] = useState('');
   const [idioma, setIdioma] = useState('');
+  const [estado, setEstado] = useState('');
   const idiomas = useMemo(() => [...new Set(filas.map((f) => f.idioma))].sort(), [filas]);
   const visibles = useMemo(() => {
     const t = normalizar(q.trim());
-    return filas.filter((f) => (!idioma || f.idioma === idioma)
+    return filas.filter((f) => (!idioma || f.idioma === idioma) && (!estado || f.estado === estado)
       && (!t || normalizar(`${f.nombre} ${f.curp} ${f.folio}`).includes(t)));
-  }, [filas, q, idioma]);
-  return { q, setQ, idioma, setIdioma, idiomas, visibles };
+  }, [filas, q, idioma, estado]);
+  return { q, setQ, idioma, setIdioma, estado, setEstado, idiomas, visibles };
 }
 
-export function Filtros({ q, setQ, idioma, setIdioma, idiomas, total, visibles }:
+export function Filtros({ q, setQ, idioma, setIdioma, estado, setEstado, idiomas, total, visibles }:
   Omit<ReturnType<typeof useFiltro>, 'visibles'> & { total: number; visibles: number }) {
   return (
     <div className="panel-filtros">
@@ -29,6 +30,10 @@ export function Filtros({ q, setQ, idioma, setIdioma, idiomas, total, visibles }
       <select className="panel-input" aria-label="Idioma" value={idioma} onChange={(e) => setIdioma(e.target.value)}>
         <option value="">Todos los idiomas</option>
         {idiomas.map((i) => <option key={i} value={i}>{i}</option>)}
+      </select>
+      <select className="panel-input" aria-label="Estado" value={estado} onChange={(e) => setEstado(e.target.value)}>
+        <option value="">Todos los estados</option>
+        {Object.entries(ESTADOS).map(([v, t]) => <option key={v} value={v}>{t}</option>)}
       </select>
       <span className="panel-conteo">{visibles} de {total}</span>
     </div>

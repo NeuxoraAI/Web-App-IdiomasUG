@@ -24,3 +24,4 @@ export type SesionPersonalResponse = S['SesionPersonal'];
 export type ExamenPresentado = S['ExamenPresentado'];
 export type Solicitante = S['Solicitante'];
 export type Carga = S['Carga'];
+export type NuevaClave = S['NuevaClave'];
