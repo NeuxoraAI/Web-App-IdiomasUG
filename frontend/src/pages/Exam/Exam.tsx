@@ -4,10 +4,9 @@
 import { useEffect, useRef, useState, type ClipboardEvent, type CSSProperties } from 'react';
 import './exam.css';
 import beeBot from '../../assets/bee-bot.webp';
-import { ApiError, api } from '../../api/client';
+import { ApiError, api, getProgreso, setProgreso } from '../../api/client';
 import type { PosicionRequest, Valor } from '../../api/types';
 import { AppShell } from '../../components/layout/AppShell';
-import { useExamProgress } from '../../context/examProgress';
 import { usePerfil, useSession } from '../../context/SessionContext';
 import { useCountdown } from '../../hooks/useCountdown';
 import { AI_GUARD } from '../../services/config';
@@ -23,8 +22,7 @@ export function Exam({ exam }: { exam: LoadedExam }) {
   const { finishTest, showProfile, fail } = useSession();
   const { folio } = usePerfil();
 
-  const setQ = useExamProgress((s) => s.setQ);
-  const q = Math.min(useExamProgress((s) => s.q), questions.length - 1);
+  const [q, setQ] = useState(() => Math.min(getProgreso(), questions.length - 1));
   const [answers, setAnswers] = useState(exam.answers);
   const [pick, setPick] = useState<number | null>(null);
   const [pickL, setPickL] = useState<number | null>(null);
@@ -96,6 +94,7 @@ export function Exam({ exam }: { exam: LoadedExam }) {
       finish();
     } else {
       setQ(q + 1);
+      setProgreso(q + 1);
       api('PUT', '/intento/posicion', { pregunta: q + 1 } satisfies PosicionRequest).catch(() => {});
       setPick(null);
       setPickL(null);

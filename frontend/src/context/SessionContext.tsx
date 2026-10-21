@@ -1,10 +1,9 @@
 // Session state and screen navigation shared by every page.
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { ApiError, api, getToken, setToken } from '../api/client';
+import { ApiError, api, getProgreso, getToken, setProgreso, setToken } from '../api/client';
 import type { Examen, Perfil, Resultado, SesionRequest, SesionResponse } from '../api/types';
 import { loadExam, type LoadedExam } from '../services/questions';
-import { useExamProgress } from './examProgress';
 
 export type Screen = 'login' | 'profile' | 'intro' | 'test' | 'results';
 
@@ -42,7 +41,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     setPerfil(null);
     setResultado(null);
     setExam(null);
-    useExamProgress.getState().reset();
+    setProgreso(null);
     setLoginError(error);
     setScreen('login');
   }, []);
@@ -69,11 +68,10 @@ export function SessionProvider({ children }: { children: ReactNode }) {
   const startTest = useCallback(async () => {
     try {
       const examen = await api<Examen>('POST', '/intento');
-      setExam(loadExam(examen));
       // Resume where the applicant was: the server knows it across devices,
       // this tab's copy covers a position save that didn't arrive.
-      const progress = useExamProgress.getState();
-      progress.setQ(Math.max(progress.q, examen.pregunta_actual));
+      setProgreso(Math.max(getProgreso(), examen.pregunta_actual));
+      setExam(loadExam(examen));
       setPerfil((p) => p && { ...p, estado: 'en_curso' });
       setScreen('test');
     } catch (err) {
@@ -85,7 +83,7 @@ export function SessionProvider({ children }: { children: ReactNode }) {
     try {
       const r = await api<Resultado>('POST', '/intento/finalizar');
       setResultado(r);
-      useExamProgress.getState().reset();
+      setProgreso(null);
       setPerfil((p) => p && { ...p, estado: 'finalizado' });
       setScreen('results');
     } catch (err) {

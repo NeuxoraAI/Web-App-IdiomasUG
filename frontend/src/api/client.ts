@@ -13,6 +13,13 @@ function storage<T>(fn: (s: Storage) => T): T | null {
 export const getToken = (key = KEY) => storage((s) => s.getItem(key));
 export const setToken = (t: string | null, key = KEY) => storage((s) => (t ? s.setItem(key, t) : s.removeItem(key)));
 
+// Current question index. The server keeps it too (PUT /intento/posicion) so the
+// exam resumes on another device; this copy covers a save that didn't arrive.
+const KEY_PROGRESO = 'exaubi-progreso';
+export const getProgreso = () => Number(storage((s) => s.getItem(KEY_PROGRESO))) || 0;
+export const setProgreso = (q: number | null) =>
+  storage((s) => (q === null ? s.removeItem(KEY_PROGRESO) : s.setItem(KEY_PROGRESO, String(q))));
+
 export class ApiError extends Error {
   status: number;
   constructor(status: number, message: string) {
