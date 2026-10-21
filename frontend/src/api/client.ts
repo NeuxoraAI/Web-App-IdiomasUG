@@ -23,15 +23,16 @@ export class ApiError extends Error {
 
 export async function api<T = null>(method: string, path: string, body?: unknown, tokenKey = KEY): Promise<T> {
   const token = getToken(tokenKey);
+  const raw = body instanceof Blob; // files go as-is (e.g. the applicants .xlsx)
   let res: Response;
   try {
     res = await fetch(API_URL + path, {
       method,
       headers: {
-        ...(body !== undefined && { 'Content-Type': 'application/json' }),
+        ...(body !== undefined && { 'Content-Type': raw ? 'application/octet-stream' : 'application/json' }),
         ...(token && { Authorization: `Bearer ${token}` }),
       },
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: raw ? body : body !== undefined ? JSON.stringify(body) : undefined,
     });
   } catch {
     throw new ApiError(0, 'No hay conexión con el servidor. Revisa tu internet e inténtalo de nuevo.');

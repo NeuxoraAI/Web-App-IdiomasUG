@@ -175,10 +175,86 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/personal/examenes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Examenes Presentados */
+        get: operations["examenes_presentados_api_personal_examenes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/personal/solicitantes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Solicitantes */
+        get: operations["solicitantes_api_personal_solicitantes_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/personal/solicitantes/carga": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Cargar Solicitantes */
+        post: operations["cargar_solicitantes_api_personal_solicitantes_carga_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** Carga */
+        Carga: {
+            /** Registrados */
+            registrados: number;
+            /** Errores */
+            errores: components["schemas"]["ErrorCarga"][];
+            /**
+             * Excel
+             * @description Output .xlsx (base64): the only plain-text copy of the access keys
+             */
+            excel: string;
+        };
+        /** ErrorCarga */
+        ErrorCarga: {
+            /** Fila */
+            fila: number;
+            /** Curp */
+            curp: string;
+            /** Nombre */
+            nombre: string;
+            /** Idioma */
+            idioma: string;
+            /** Error */
+            error: string;
+        };
         /** Examen */
         Examen: {
             /** Intento Id */
@@ -197,6 +273,36 @@ export interface components {
             };
             /** Pregunta Actual */
             pregunta_actual: number;
+        };
+        /** ExamenPresentado */
+        ExamenPresentado: {
+            /** Folio */
+            folio: string;
+            /** Curp */
+            curp: string;
+            /** Nombre */
+            nombre: string;
+            /** Idioma */
+            idioma: string;
+            /** Convocatoria */
+            convocatoria: string;
+            /**
+             * Estado
+             * @enum {string}
+             */
+            estado: "pendiente" | "en_curso" | "finalizado" | "cancelado";
+            /** Aciertos */
+            aciertos?: number | null;
+            /** Calificables */
+            calificables?: number | null;
+            /** Mcer */
+            mcer?: string | null;
+            /** Nivel */
+            nivel?: string | null;
+            /** Iniciado En */
+            iniciado_en?: string | null;
+            /** Finalizado En */
+            finalizado_en?: string | null;
         };
         /** ExamenResumen */
         ExamenResumen: {
@@ -362,6 +468,31 @@ export interface components {
             /** Token */
             token: string;
             usuario: components["schemas"]["Usuario"];
+        };
+        /** Solicitante */
+        Solicitante: {
+            /** Folio */
+            folio: string;
+            /** Curp */
+            curp: string;
+            /** Nombre */
+            nombre: string;
+            /** Correo */
+            correo?: string | null;
+            /** Idioma */
+            idioma: string;
+            /** Convocatoria */
+            convocatoria: string;
+            /**
+             * Estado
+             * @enum {string}
+             */
+            estado: "pendiente" | "en_curso" | "finalizado" | "cancelado";
+            /**
+             * Creada En
+             * Format: date-time
+             */
+            creada_en: string;
         };
         /** Usuario */
         Usuario: {
@@ -678,6 +809,77 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Resultado"];
+                };
+            };
+        };
+    };
+    examenes_presentados_api_personal_examenes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ExamenPresentado"][];
+                };
+            };
+        };
+    };
+    solicitantes_api_personal_solicitantes_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Solicitante"][];
+                };
+            };
+        };
+    };
+    cargar_solicitantes_api_personal_solicitantes_carga_post: {
+        parameters: {
+            query: {
+                convocatoria: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Carga"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

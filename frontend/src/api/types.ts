@@ -21,3 +21,6 @@ export type Resultado = S['Resultado'];
 export type UsuarioPersonal = S['Usuario'];
 export type SesionPersonalRequest = S['LoginPersonal'];
 export type SesionPersonalResponse = S['SesionPersonal'];
+export type ExamenPresentado = S['ExamenPresentado'];
+export type Solicitante = S['Solicitante'];
+export type Carga = S['Carga'];

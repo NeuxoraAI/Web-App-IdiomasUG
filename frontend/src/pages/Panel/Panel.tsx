@@ -1,13 +1,15 @@
 // Staff panel (/panel): own login and session, separate from the applicant flow.
 
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react';
 import './panel.css';
 import { api, ApiError, KEY_PERSONAL, setToken } from '../../api/client';
 import type { SesionPersonalRequest, SesionPersonalResponse, UsuarioPersonal } from '../../api/types';
+import { Examenes } from './Examenes';
+import { Solicitantes } from './Solicitantes';
 
-const TABS: Record<UsuarioPersonal['rol'], string[]> = {
-  admin: ['Calificaciones', 'Solicitantes', 'Exámenes'],
-  profesor: ['Calificaciones'],
+const TABS: Record<UsuarioPersonal['rol'], [string, () => ReactNode][]> = {
+  admin: [['Exámenes', Examenes], ['Solicitantes', Solicitantes]],
+  profesor: [['Exámenes', Examenes]],
 };
 
 const salir = (tokenKey = KEY_PERSONAL) => setToken(null, tokenKey);
@@ -78,13 +80,13 @@ export function Panel() {
         </button>
       </header>
       <div className="panel-tabs" role="tablist" aria-label="Secciones del panel">
-        {tabs.map((t, i) => (
+        {tabs.map(([t], i) => (
           <button key={t} type="button" role="tab" id={`tab-${i}`} aria-selected={i === tab}
             aria-controls="panel-cuerpo" className="panel-tab" onClick={() => setTab(i)}>{t}</button>
         ))}
       </div>
       <section id="panel-cuerpo" role="tabpanel" aria-labelledby={`tab-${tab}`} className="panel-body">
-        <p>{tabs[tab]}: próximamente.</p>
+        {tabs.map(([t, Tab], i) => i === tab && <Tab key={t} />)}
       </section>
     </div>
   );
