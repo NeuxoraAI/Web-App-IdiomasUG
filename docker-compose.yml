@@ -1,26 +1,24 @@
-# Production-like stack on nextcl. MongoDB runs separately (~/inst/mongodb-idiomas).
-# Secrets come from .env (copied by the deploy workflow from ~/inst/ug_idiomas_entorno/.env).
+# Producción: la app se conecta a las bases de datos que viven en
+# /opt/neuxora/produccion/db (red idiomas_ug_red_prod).
+# Los secretos vienen de .env, que el workflow copia desde
+# /opt/neuxora/produccion/app/.env.
+
 name: idiomas-ug
 
 services:
   api:
     build: ./backend
     env_file: .env
-    environment:
-      REDIS_URL: redis://redis:6379/0
-    depends_on: [redis]
-    restart: unless-stopped
-
-  # Write-through cache in front of MongoDB (db/cache.py). Pure cache: no
-  # persistence needed, MongoDB holds every write. Not published to the host.
-  redis:
-    image: redis:7-alpine
-    command: ["redis-server", "--save", "", "--appendonly", "no", "--maxmemory", "128mb", "--maxmemory-policy", "allkeys-lru"]
     restart: unless-stopped
 
   web:
     build: ./frontend
     depends_on: [api]
     ports:
-      - "0.0.0.0:80:80"   # IPv4 only, same policy as MongoDB
+      - "0.0.0.0:80:80"
     restart: unless-stopped
+
+networks:
+  default:
+    name: idiomas_ug_red_prod
+    external: true

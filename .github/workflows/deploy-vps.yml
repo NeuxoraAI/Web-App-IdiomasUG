@@ -1,38 +1,57 @@
-name: Deploy to nextcl
+name: CI/CD Neuxora
 
 on:
   push:
-    branches: [develop]
-    paths: ["backend/**", "frontend/**", "docker-compose.yml", ".github/workflows/deploy-vps.yml"]
+    branches: [develop, main]
+    paths: ["backend/**", "frontend/**", "docker-compose*.yml", ".github/workflows/**"]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 concurrency:
-  group: deploy-nextcl
+  group: deploy-${{ github.ref_name }}
   cancel-in-progress: false
 
 jobs:
-  deploy:
-    runs-on: self-hosted   # the only org runner: nextcl
+  test:
+    runs-on: self-hosted
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
 
-      - name: Load server secrets
-        run: cp ~/inst/ug_idiomas_entorno/.env .env
+      - name: Cargar entorno de pruebas
+        run: |
+          cp /opt/neuxora/desarrollo/app-test.env .env.test
+          chmod 600 .env.test
 
-      - name: Build images
-        run: docker compose build
+      - name: Build
+        run: docker compose -f docker-compose.yml -f docker-compose.test.yml build
 
-      - name: Run tests (against idiomas_ug_test)
-        run: docker compose run --rm --no-deps api python -m pytest tests -q
+      - name: Tests
+        run: |
+          docker compose -f docker-compose.yml -f docker-compose.test.yml \
+            run --rm --no-deps api python -m pytest tests -q
+
+  deploy:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: self-hosted
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Cargar secretos de producción
+        run: |
+          cp /opt/neuxora/produccion/app/.env .env
+          chmod 600 .env
 
       - name: Deploy
-        run: docker compose up -d --remove-orphans
+        run: |
+          docker compose up -d --build --remove-orphans
+          docker image prune -f
 
       - name: Health check
         run: |
           for i in $(seq 1 20); do
-            curl -sf http://localhost/api/salud && exit 0
-            sleep 3
-          done
-          docker compose logs --tail 50 api
-          exit 1
+            curl

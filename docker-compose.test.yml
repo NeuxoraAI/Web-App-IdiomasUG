@@ -1,0 +1,14 @@
+# Solo para pruebas: conecta la API a la red de desarrollo
+# y usa la notita de pruebas (.env.test) en vez de la de producción.
+
+services:
+  api:
+    env_file: !override
+      - .env.test
+    networks: !override
+      - dev
+
+networks:
+  dev:
+    name: idiomas_ug_red_dev
+    external: true
