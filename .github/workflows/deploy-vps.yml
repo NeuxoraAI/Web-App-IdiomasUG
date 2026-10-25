@@ -54,4 +54,8 @@ jobs:
       - name: Health check
         run: |
           for i in $(seq 1 20); do
-            curl
+            curl -sf http://localhost/api/salud && exit 0
+            sleep 3
+          done
+          docker compose logs --tail 50 api
+          exit 1
